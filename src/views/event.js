@@ -100,7 +100,8 @@ function eventTiles(ctx, level) {
   }));
 }
 
-export function eventView(ctx) {
+// The original tile layout, kept as `events: classic`.
+export function classicEventView(ctx) {
   const levels = [...EVENT_LEVELS]
     .map((level) => ({ level, tiles: eventTiles(ctx, level) }))
     .filter(({ tiles }) => tiles.length);
@@ -138,5 +139,17 @@ export function eventView(ctx) {
         column_span: 5,
       },
     ],
+  };
+}
+
+export function eventView(ctx, options = {}) {
+  if (options.events === "classic") return classicEventView(ctx);
+  if (!ctx.find("sensor", /^event_(fatal|critical|warning|info)_/).length) return null;
+  const card = (mode) => ({ type: "custom:cellkeeper-events-card", prefix: ctx.prefix, mode });
+  return {
+    title: "Event",
+    type: "sections",
+    max_columns: 2,
+    sections: [{ column_span: 2, cards: [card("status")] }, { cards: [card("log")] }, { cards: [card("catalog")] }],
   };
 }

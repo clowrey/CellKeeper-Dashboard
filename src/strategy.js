@@ -18,7 +18,7 @@ export const VIEWS = {
   configuration: (ctx, options) => configurationView(ctx, options),
   system: (ctx) => systemView(ctx),
   log: (ctx) => logView(ctx),
-  event: (ctx) => eventView(ctx),
+  event: (ctx, options) => eventView(ctx, options),
   note: () => noteView(),
 };
 

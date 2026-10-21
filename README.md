@@ -67,6 +67,23 @@ of what the group does to the pack right now:
 Numbers are edited with − / + (taps are grouped into one write) or by typing; values show in
 readable units (V, s) and "Saving…" until the BMS reports the new value back.
 
+### The Event view
+
+- **Status**: "All clear", or what is active now, worst first, each with what it means, how long
+  it has been active and what happens next (a warning's count against the number that turns it
+  fatal; fatal events stay until the BMS restarts). Info events and events that were active
+  earlier since the BMS started are listed underneath.
+- **Event log**: every event raised, repeated, escalated and cleared over the last 10 days, read
+  from Home Assistant's history of the event sensors, with BMS starts and HMI reconnects; bursts
+  of repeats fold into one line. Info events are hidden unless you ask for them.
+- **All events**: the firmware's 61 events grouped by area, with what each means, the level it
+  starts at, when it turns fatal, and its count since the BMS started. Searchable.
+
+The levels and escalation rules come from the firmware's event table (`bms/sys/events/events.h`
+in bmstest1), not from the sensor names, some of which carry an older label: "Event Fatal POS
+Stuck Open" is a warning that turns fatal after 20 occurrences. `python tools/make_events.py`
+rebuilds `src/events/catalog.js` from that table and the HMI's `bms_core.yaml`.
+
 ## Naming your packs
 
 CellKeeper entity ids start with the name of the pack's HMI device. Name your first (often only)
@@ -149,6 +166,7 @@ The icon paths in `src/icons.js` are generated from the logo outline in
 | `pack_name` | the HMI device's name | Name shown on the Overview's pack card. |
 | `overview` | | `classic` for the original gauge Overview instead. |
 | `configuration` | | `classic` for the original tile Configuration view instead. |
+| `events` | | `classic` for the original tile Event view instead. |
 | `hide_views` | `[]` | Views to leave out: `overview`, `detail`, `cells`, `cells_3d`, `cells_2d`, `configuration`, `system`, `log`, `event`, `note`. |
 | `gauges` | | Change the classic Overview's gauges, keyed by `soc`, `pack_voltage`, `cell_voltage_min`, `cell_voltage_max`, `current`, `power`. Each takes [gauge card](https://www.home-assistant.io/dashboards/gauge/) options (`min`, `max`, `segments`, `severity`, `name`, …) that replace the defaults. |
 
@@ -202,6 +220,8 @@ dashboards:
   (`temperature`, `energy`, `isolation`, `inverter`), `navigate` (a view path for its header).
 - `custom:cellkeeper-settings-card`, `custom:cellkeeper-lock-card`: the Configuration view's cards
   (see the comment at the top of `src/config/settings-card.js` for the options).
+- `custom:cellkeeper-events-card`: the Event view's cards. Options: `prefix`, `mode` (`status`,
+  `log`, `catalog`), `days` (log, default 10).
 - `custom:cellkeeper-event-grid`: tiles for a pack's events that are active now
   (`show: active`) or have been active (`show: previous`); hidden when there are none.
   Options: `prefix`, `show`, `title`, `columns`.

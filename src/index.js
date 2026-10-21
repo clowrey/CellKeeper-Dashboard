@@ -8,6 +8,7 @@ import "./overview/cells-card.js";
 import "./overview/stat-card.js";
 import "./config/settings-card.js";
 import "./config/lock-card.js";
+import "./events/events-card.js";
 import { CellKeeperDashboardStrategy } from "./strategy.js";
 import { define } from "./context.js";
 

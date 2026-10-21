@@ -80,6 +80,14 @@ check(
   ["cellkeeper-pack-card", "cellkeeper-cells-card", "cellkeeper-stat-card"].every((t) => overviewTypes.includes(t))
 );
 check("views have paths", config.views.every((v) => v.path));
+check(
+  "event view: status, log and catalogue",
+  ["status", "log", "catalog"].every((m) => JSON.stringify(config.views.find((v) => v.path === "event")).includes(`"mode":"${m}"`))
+);
+check(
+  "classic event view still lists the tiles",
+  JSON.stringify(await generateDashboard({ prefix, events: "classic" }, hass)).includes("cellkeeper-state-tile")
+);
 check("no audio amplifier on the dashboard", !JSON.stringify(config).includes("audio_amplifier"));
 check(
   "classic configuration: no audio amplifier",
