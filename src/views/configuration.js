@@ -47,8 +47,14 @@ export const SETTING_GROUPS = [
   },
 ];
 
-// Entities shown elsewhere on the dashboard (Log view, Settings Unlock).
-const SHOWN_ELSEWHERE = new Set(["number.log_update_rate", "switch.settings_unlock", "switch.log_enable"]);
+// Entities kept out of "Other settings": shown elsewhere on the dashboard (Log view, Settings
+// Unlock), or not a pack setting (the HMI's audio amplifier).
+const NOT_OTHER_SETTINGS = new Set([
+  "number.log_update_rate",
+  "switch.settings_unlock",
+  "switch.log_enable",
+  "switch.audio_amplifier",
+]);
 
 const GUIDE = `## BMS Configuration
 Use **Settings Unlock Mode** to allow writes. When locked, values are read-only and write attempts are blocked.
@@ -109,7 +115,7 @@ function otherSettingsSection(ctx) {
     ctx
       .find(domain, /.*/)
       .map((id) => ({ id, key: id.slice(domain.length + 1 + prefixLen) }))
-      .filter(({ key }) => !(domain === "number" && known.has(key)) && !SHOWN_ELSEWHERE.has(`${domain}.${key}`));
+      .filter(({ key }) => !(domain === "number" && known.has(key)) && !NOT_OTHER_SETTINGS.has(`${domain}.${key}`));
 
   const numbers = unclaimed("number");
   const rows = [...unclaimed("select"), ...unclaimed("switch")];
@@ -251,7 +257,7 @@ function otherSettings(ctx, claimed) {
   for (const domain of ["number", "switch"]) {
     for (const id of ctx.find(domain, /.*/)) {
       const key = id.slice(domain.length + 1 + ctx.prefix.length + 1);
-      if (claimed.has(`${domain}:${key}`) || SHOWN_ELSEWHERE.has(`${domain}.${key}`)) continue;
+      if (claimed.has(`${domain}:${key}`) || NOT_OTHER_SETTINGS.has(`${domain}.${key}`)) continue;
       rows.push({ key: `${domain}:${key}`, name: ctx.shortName(id) });
     }
   }

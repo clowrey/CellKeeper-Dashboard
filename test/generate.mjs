@@ -80,6 +80,11 @@ check(
   ["cellkeeper-pack-card", "cellkeeper-cells-card", "cellkeeper-stat-card"].every((t) => overviewTypes.includes(t))
 );
 check("views have paths", config.views.every((v) => v.path));
+check("no audio amplifier on the dashboard", !JSON.stringify(config).includes("audio_amplifier"));
+check(
+  "classic configuration: no audio amplifier",
+  !JSON.stringify(await generateDashboard({ prefix, configuration: "classic" }, hass)).includes("audio_amplifier")
+);
 
 const none = await generateDashboard({ prefix: "nope" }, hass);
 check("unknown prefix: one view explaining it", none.views.length === 1 && JSON.stringify(none).includes("No CellKeeper entities"));

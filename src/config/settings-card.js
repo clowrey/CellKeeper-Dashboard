@@ -17,7 +17,7 @@ import { VISUALS, visualStyles } from "./visuals.js";
 //       factor: 0.1, unit: V, digits: 1        show and edit in other units (value × factor)
 //       confirm: true                          ask again before writing
 //     - key: button:calibrate_isolation_zero   a button, pressed after a second tap
-//     - key: switch:audio_amplifier            a toggle
+//     - key: switch:log_enable                 a toggle
 //     - key: sensor:isolation_check_age        a read-only value
 //
 // Settings that can't be written while locked show their value with a lock until the pack is
