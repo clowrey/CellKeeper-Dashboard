@@ -12,6 +12,8 @@ strategy:
   prefix: ck0
 ```
 
+![Overview of a 96s NMC pack discharging: battery gauge at 99.7 %, power flow against the charge and discharge limits, 24 h chart, cell voltages with balancing, temperature, energy, isolation and inverter cards](https://raw.githubusercontent.com/clowrey/CellKeeper-Dashboard/main/docs/overview-ck0.webp)
+
 Views: **Overview** (below), **Detail**, **Cells** (live cell voltages and balancing), **Cells 3D** /
 **Cells 2D** (24 h cell voltage history), **Configuration** (all BMS settings), **System**, **Log**,
 **Event** (every event type, coloured by state) and **Note**.
@@ -37,6 +39,10 @@ One page that answers "is the pack OK, and what is it doing?":
 
 Everything is clickable through to the entity's history or the view with the details, and the
 page reflows from phone to wide screen in light and dark themes.
+
+The same page for a 108s LFP pack, idle and floating between balance charges:
+
+![Overview of a 108s LFP pack: idle at 99.2 %, charge limited by cell voltage, a floating balance charge scheduled, 12 mV cell spread](https://raw.githubusercontent.com/clowrey/CellKeeper-Dashboard/main/docs/overview-ck1.webp)
 
 ## Naming your packs
 
