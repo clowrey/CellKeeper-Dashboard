@@ -124,7 +124,8 @@ function otherSettingsSection(ctx) {
   };
 }
 
-export function configurationView(ctx) {
+// The original tile layout, kept as `configuration: classic`.
+export function classicConfigurationView(ctx) {
   const [socCurrent, voltageLimits, balancing, balanceCharge] = SETTING_GROUPS;
   return {
     title: "Configuration",
@@ -233,5 +234,168 @@ export function configurationView(ctx) {
       },
       otherSettingsSection(ctx),
     ]),
+  };
+}
+
+// ---- the Configuration view ----
+
+const V = { unit: "V", factor: 0.1, digits: 1 }; // 0.1 V offsets shown in volts
+
+function settingsCard(ctx, card) {
+  return { type: "custom:cellkeeper-settings-card", prefix: ctx.prefix, ...card };
+}
+
+// Pack numbers/switches no card shows, so newer firmware's settings appear here.
+function otherSettings(ctx, claimed) {
+  const rows = [];
+  for (const domain of ["number", "switch"]) {
+    for (const id of ctx.find(domain, /.*/)) {
+      const key = id.slice(domain.length + 1 + ctx.prefix.length + 1);
+      if (claimed.has(`${domain}:${key}`) || SHOWN_ELSEWHERE.has(`${domain}.${key}`)) continue;
+      rows.push({ key: `${domain}:${key}`, name: ctx.shortName(id) });
+    }
+  }
+  return rows;
+}
+
+export function configurationView(ctx, options = {}) {
+  if (options.configuration === "classic") return classicConfigurationView(ctx);
+  const balanceCharge = ctx.has(ctx.id("number", "balance_charge_interval"));
+  const cards = [
+    settingsCard(ctx, {
+      title: "Cell voltage window",
+      icon: "mdi:arrow-expand-horizontal",
+      needs_unlock: true,
+      description:
+        "The working range is 0–100 % SOC and sets the voltage limits sent to the inverter. Past it the BMS " +
+        "limits current; past the soft limits only a small restoration current is allowed.",
+      visual: "voltage",
+      rows: [
+        { key: "number:cell_voltage_soft_max", name: "Soft max", help: "Above this only a low-current restoration discharge is allowed." },
+        { key: "number:cell_voltage_working_max", name: "Working max", help: "100 % SOC. The inverter's charge voltage limit is this × cells." },
+        { key: "number:cell_voltage_working_min", name: "Working min", help: "0 % SOC; set it to your inverter's 0 % point. Its low voltage limit is this × cells." },
+        { key: "number:cell_voltage_soft_min", name: "Soft min", help: "Below this only a low-current restoration charge is allowed." },
+        {
+          key: "number:voltage_limit_offset_upper",
+          name: "Charge voltage offset",
+          help: balanceCharge
+            ? "Added to the charge voltage sent to the inverter. While a balance charge schedule is on, it sets this; change Float and Balance charge offset instead."
+            : "Added to the charge voltage sent to the inverter, for a difference between its voltage reading and the BMS's.",
+          ...V,
+        },
+        {
+          key: "number:voltage_limit_offset_lower",
+          name: "Low voltage offset",
+          help: "Added to the low voltage limit sent to the inverter.",
+          ...V,
+        },
+      ],
+    }),
+    settingsCard(ctx, {
+      title: "Current limits",
+      icon: "mdi:current-dc",
+      needs_unlock: true,
+      description: "What the BMS allows the inverter right now, and every limit that goes into it.",
+      visual: "limits",
+      rows: [
+        { key: "number:max_charge_current", name: "Max charge current", help: "Your cap on charging; the BMS clamps it to the hard limit." },
+        { key: "number:max_discharge_current", name: "Max discharge current", help: "Your cap on discharging; the BMS clamps it to the hard limit." },
+      ],
+    }),
+    settingsCard(ctx, {
+      title: "State of charge",
+      icon: "mdi:battery-sync",
+      needs_unlock: true,
+      visual: "soc",
+      rows: [
+        { key: "number:soc_scaling_min", name: "Inverter 0 % at", help: "The BMS SOC the inverter is told is 0 %." },
+        { key: "number:soc_scaling_max", name: "Inverter 100 % at", help: "The BMS SOC the inverter is told is 100 %." },
+        {
+          key: "number:soc_set_cmd",
+          name: "Set SOC",
+          help: "Overwrites the BMS's SOC estimate, e.g. after a full charge or a capacity test. Enter the value twice to set it.",
+          confirm: true,
+        },
+      ],
+    }),
+    settingsCard(ctx, {
+      title: "Balancing",
+      icon: "mdi:scale-balance",
+      needs_unlock: true,
+      description:
+        "Balancing runs odd then even cells (neighbours never together) and bleeds each cell for a time " +
+        "proportional to how far it sits above the lowest one.",
+      visual: "balancing",
+      rows: [
+        { key: "number:auto_balancing_period", name: "Session interval", help: "Time between balancing sessions; 0 turns balancing off.", unit: "s", factor: 0.001, digits: 0 },
+        { key: "number:balancing_start_voltage", name: "Start voltage", help: "Balancing starts once the highest cell reaches this." },
+        { key: "number:minimum_balancing_voltage", name: "Minimum cell voltage", help: "No balancing while any cell is below this." },
+        { key: "number:balance_min_offset", name: "Dead band", help: "Cells less than this above the lowest cell aren't balanced." },
+        { key: "number:balancing_periods_per_mv", name: "Periods per mV", help: "Balancing time per mV a cell sits above the lowest plus the dead band." },
+      ],
+    }),
+    balanceCharge
+      ? settingsCard(ctx, {
+          title: "Balance charge",
+          icon: "mdi:calendar-sync",
+          needs_unlock: false,
+          description:
+            "Keeping LFP at 100 % ages it, so the pack floats lower and every few days the HMI raises the charge " +
+            "voltage for a while so the cells reach the knee, balance, and the SOC gets a full point.",
+          visual: "balance_charge",
+          rows: [
+            { key: "number:balance_charge_interval", name: "Every", help: "Days between balance charges; 0 is off." },
+            { key: "number:balance_charge_start_hour", name: "Start hour", help: "When the day's window opens. A missed window waits for the next day's." },
+            { key: "number:balance_charge_duration", name: "Duration", help: "Hours at the higher voltage; the window ends at midnight at the latest." },
+            { key: "number:float_offset_upper", name: "Float offset", help: "Charge voltage offset between balance charges.", ...V },
+            { key: "number:balance_charge_offset_upper", name: "Balance charge offset", help: "Charge voltage offset during a balance charge.", ...V },
+            { key: "button:start_balance_charge_now", name: "Start now", help: "Runs one now for the full duration; it counts as this interval's.", label: "Start" },
+            { key: "button:stop_balance_charge", name: "Stop", help: "Ends a running one and floats; the next is a full interval away.", label: "Stop" },
+          ],
+        })
+      : null,
+    settingsCard(ctx, {
+      title: "Isolation",
+      icon: "mdi:shield-check-outline",
+      description:
+        "The BMS measures isolation with the contactors open: live while they are, otherwise the last open " +
+        "reading (capped at 100 MΩ). At every boot it checks the zero; a large offset raises Isolation " +
+        "Asymmetry (a possible leak) and keeps the old zero.",
+      rows: [
+        { key: "sensor:contactor_state_text", name: "Contactors" },
+        { key: "sensor:isolation_resistance", name: "Isolation resistance", digits: 1 },
+        { key: "sensor:pack_pos_to_chassis", name: "Pack + to chassis" },
+        { key: "sensor:pack_neg_to_chassis", name: "Pack − to chassis" },
+        { key: "sensor:isolation_check_age", name: "Last open-contactor check", unit: "h", factor: 1 / 3600 },
+        { key: "button:calibrate_isolation_zero", name: "Calibrate isolation zero", help: "Battery stopped, leak ruled out.", label: "Calibrate", danger: true },
+      ],
+    }),
+  ].filter(Boolean);
+  const claimed = new Set(cards.flatMap((c) => c.rows.map((r) => r.key)));
+  const other = otherSettings(ctx, claimed);
+  if (other.length) cards.push(settingsCard(ctx, { title: "Other settings", icon: "mdi:tune-variant", rows: other }));
+
+  // The lock bar across the top, then the cards in two wide columns of about equal height
+  // (rows plus a few for a picture), in order.
+  const weight = (c) => c.rows.length + (c.visual ? 4 : 0) + 2;
+  const total = cards.reduce((a, c) => a + weight(c), 0);
+  const left = [];
+  let acc = 0;
+  for (const c of cards) {
+    if (left.length && acc + weight(c) / 2 > total / 2) break;
+    left.push(c);
+    acc += weight(c);
+  }
+  return {
+    title: "Configuration",
+    type: "sections",
+    max_columns: 2,
+    sections: [
+      ctx.has(ctx.id("switch", "settings_unlock"))
+        ? { column_span: 2, cards: [{ type: "custom:cellkeeper-lock-card", prefix: ctx.prefix }] }
+        : null,
+      { cards: left },
+      { cards: cards.slice(left.length) },
+    ].filter((sec) => sec && sec.cards.length),
   };
 }

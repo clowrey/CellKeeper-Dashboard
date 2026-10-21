@@ -44,6 +44,29 @@ The same page for a 108s LFP pack, idle and floating between balance charges:
 
 ![Overview of a 108s LFP pack: idle at 99.2 %, charge limited by cell voltage, a floating balance charge scheduled, 12 mV cell spread](https://raw.githubusercontent.com/clowrey/CellKeeper-Dashboard/main/docs/overview-ck1.webp)
 
+### The Configuration view
+
+Every BMS setting, grouped by what it controls, each with a line on what it does, and a picture
+of what the group does to the pack right now:
+
+- **Lock bar**: BMS settings only take writes for 30 s after Unlock (each change restarts the
+  window); it shows the countdown and the BMS's answer to a write ("Settings applied", "Clamped
+  to hard limit", …).
+- **Cell voltage window**: soft and working limits on one scale with the cells' present range and
+  the balancing thresholds, and the pack voltages they give the inverter.
+- **Current limits**: every limit that goes into the charge and discharge current, with the one in
+  force highlighted, next to your max current settings.
+- **State of charge**: how SOC scaling maps the BMS's SOC onto what the inverter sees, and Set SOC
+  (asks twice).
+- **Balancing**: the firmware's conditions as a checklist, so you can see why it is or isn't
+  balancing.
+- **Balance charge** (HMI firmware with it): the schedule on a 24 h strip and the float and
+  balance-charge pack voltages; no unlock needed.
+- **Isolation** readings and calibration, and any other settings newer firmware adds.
+
+Numbers are edited with − / + (taps are grouped into one write) or by typing; values show in
+readable units (V, s) and "Saving…" until the BMS reports the new value back.
+
 ## Naming your packs
 
 CellKeeper entity ids start with the name of the pack's HMI device. Name your first (often only)
@@ -125,6 +148,7 @@ The icon paths in `src/icons.js` are generated from the logo outline in
 | `title` | `BMS Dashboard` | Dashboard title. |
 | `pack_name` | the HMI device's name | Name shown on the Overview's pack card. |
 | `overview` | | `classic` for the original gauge Overview instead. |
+| `configuration` | | `classic` for the original tile Configuration view instead. |
 | `hide_views` | `[]` | Views to leave out: `overview`, `detail`, `cells`, `cells_3d`, `cells_2d`, `configuration`, `system`, `log`, `event`, `note`. |
 | `gauges` | | Change the classic Overview's gauges, keyed by `soc`, `pack_voltage`, `cell_voltage_min`, `cell_voltage_max`, `current`, `power`. Each takes [gauge card](https://www.home-assistant.io/dashboards/gauge/) options (`min`, `max`, `segments`, `severity`, `name`, …) that replace the defaults. |
 
@@ -176,6 +200,8 @@ dashboards:
   cards. Option: `prefix`.
 - `custom:cellkeeper-stat-card`: the Overview's small cards. Options: `prefix`, `kind`
   (`temperature`, `energy`, `isolation`, `inverter`), `navigate` (a view path for its header).
+- `custom:cellkeeper-settings-card`, `custom:cellkeeper-lock-card`: the Configuration view's cards
+  (see the comment at the top of `src/config/settings-card.js` for the options).
 - `custom:cellkeeper-event-grid`: tiles for a pack's events that are active now
   (`show: active`) or have been active (`show: previous`); hidden when there are none.
   Options: `prefix`, `show`, `title`, `columns`.

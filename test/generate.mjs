@@ -63,7 +63,7 @@ const old = await generateDashboard(
     "event_info_bmb_module_id_unknown", "event_warning_bmb_module_id_check_failed", "event_fatal_bmb_module_id_conflict"])
 );
 const oldText = JSON.stringify(old);
-check("older firmware: no Balance Charge section", !oldText.includes('"Balance Charge"'));
+check("older firmware: no balance charge card", !oldText.includes("balance_charge"));
 check("older firmware: no module ID event tiles", !oldText.includes("module_id"));
 
 const custom = await generateDashboard(
