@@ -12,9 +12,31 @@ strategy:
   prefix: ck0
 ```
 
-Views: **Overview** (active events, gauges, run/stop), **Detail**, **Cells** (live cell voltages and
-balancing), **Cells 3D** / **Cells 2D** (24 h cell voltage history), **Configuration** (all BMS
-settings), **System**, **Log**, **Event** (every event type, coloured by state) and **Note**.
+Views: **Overview** (below), **Detail**, **Cells** (live cell voltages and balancing), **Cells 3D** /
+**Cells 2D** (24 h cell voltage history), **Configuration** (all BMS settings), **System**, **Log**,
+**Event** (every event type, coloured by state) and **Note**.
+
+### The Overview
+
+One page that answers "is the pack OK, and what is it doing?":
+
+- **Pack card**: state of charge on the CellKeeper battery, filled to the level and with the logo's
+  arrow running in or out while it charges or discharges; stored energy and the change over the
+  last hour; system and contactor state; a banner for every active warning, critical or fatal
+  event.
+- **Power flow**: charging/discharging power with time to full or empty, current and pack and
+  output voltage, and a centre-zero bar of the current against the charge and discharge limits
+  the BMS is sending the inverter, naming the limit that is in force (temperature, cell voltage,
+  working range, setting, …), so "why isn't it charging?" answers itself.
+- **Last 24 h**: SOC and charge/discharge power from Home Assistant's 5-minute statistics; hover for
+  values, click for the full history.
+- **Cells**: every cell's voltage zoomed to the spread, the highest (limits charging) and lowest
+  (limits discharging) cells marked, balancing cells flagged, and the spread rated.
+- **Temperature**, **Energy today**, **Isolation** (rated in Ω/V) and **Inverter link** cards, and
+  Run / Stop / Calibrate buttons that ask before they act.
+
+Everything is clickable through to the entity's history or the view with the details, and the
+page reflows from phone to wide screen in light and dark themes.
 
 ## Naming your packs
 
@@ -95,15 +117,18 @@ The icon paths in `src/icons.js` are generated from the logo outline in
 | --- | --- | --- |
 | `prefix` | `ck0` | Pack prefix: the start of the pack's entity ids. |
 | `title` | `BMS Dashboard` | Dashboard title. |
+| `pack_name` | the HMI device's name | Name shown on the Overview's pack card. |
+| `overview` | | `classic` for the original gauge Overview instead. |
 | `hide_views` | `[]` | Views to leave out: `overview`, `detail`, `cells`, `cells_3d`, `cells_2d`, `configuration`, `system`, `log`, `event`, `note`. |
-| `gauges` | | Change the Overview gauges, keyed by `soc`, `pack_voltage`, `cell_voltage_min`, `cell_voltage_max`, `current`, `power`. Each takes [gauge card](https://www.home-assistant.io/dashboards/gauge/) options (`min`, `max`, `segments`, `severity`, `name`, …) that replace the defaults. |
+| `gauges` | | Change the classic Overview's gauges, keyed by `soc`, `pack_voltage`, `cell_voltage_min`, `cell_voltage_max`, `current`, `power`. Each takes [gauge card](https://www.home-assistant.io/dashboards/gauge/) options (`min`, `max`, `segments`, `severity`, `name`, …) that replace the defaults. |
 
-The default gauge ranges suit a 96s NMC pack. For example, for a 16s LFP pack:
+The classic Overview's default gauge ranges suit a 96s NMC pack. For example, for a 16s LFP pack:
 
 ```yaml
 strategy:
   type: custom:cellkeeper
   prefix: ck1
+  overview: classic
   hide_views: [note]
   gauges:
     pack_voltage:
@@ -141,6 +166,10 @@ auto-entities, mushroom and decluttering-card are built into this plugin.
 The plugin also registers the cards the dashboard is built from; you can use them in your own
 dashboards:
 
+- `custom:cellkeeper-pack-card`, `custom:cellkeeper-cells-card`: the Overview's pack and cell
+  cards. Option: `prefix`.
+- `custom:cellkeeper-stat-card`: the Overview's small cards. Options: `prefix`, `kind`
+  (`temperature`, `energy`, `isolation`, `inverter`), `navigate` (a view path for its header).
 - `custom:cellkeeper-event-grid`: tiles for a pack's events that are active now
   (`show: active`) or have been active (`show: previous`); hidden when there are none.
   Options: `prefix`, `show`, `title`, `columns`.

@@ -64,7 +64,10 @@ export async function generateDashboard(config, hass, { hasPlotly = true } = {})
   const hidden = new Set(config.hide_views ?? []);
   const views = Object.entries(VIEWS)
     .filter(([key]) => !hidden.has(key))
-    .map(([, view]) => view(ctx, config, plotly))
+    .map(([key, view]) => {
+      const v = view(ctx, config, plotly);
+      return v && { path: key.replace(/_/g, "-"), ...v };
+    })
     .filter(Boolean);
   return { title: config.title ?? "BMS Dashboard", views };
 }

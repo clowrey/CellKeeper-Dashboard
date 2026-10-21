@@ -25,6 +25,9 @@ ICONS = {
 }
 SIZE, MARGIN = 24.0, 1.0
 
+# The Overview's battery gauge: the middle battery's outline and arrow, in 0.1 mm units.
+GAUGE_OUTLINE, GAUGE_ARROW = 22, 16
+
 
 def area(ring):
     return 0.5 * sum(x0 * y1 - x1 * y0 for (x0, y0), (x1, y1) in zip(ring, ring[1:] + ring[:1]))
@@ -49,6 +52,34 @@ def path_for(shapes):
     return "".join(d)
 
 
+def ring_path(ring, tf):
+    pts = [tf(x, y) for x, y in ring]
+    pts = [f"{x:.1f} {y:.1f}".replace(".0 ", " ") for x, y in pts]
+    return "M" + " L".join(p for i, p in enumerate(pts) if p != pts[i - 1]) + "Z"
+
+
+def gauge(shapes):
+    """Battery outline (with its cavity as a hole), the cavity alone, and the arrow, in a viewBox
+    fitted to the outline. The cavity is what the gauge fills to the state of charge."""
+    outline, arrow = shapes[GAUGE_OUTLINE], shapes[GAUGE_ARROW]
+    xs = [x for x, _ in outline["outer"]]
+    ys = [y for _, y in outline["outer"]]
+    x0, y1 = min(xs), max(ys)
+    tf = lambda x, y: ((x - x0) * 10, (y1 - y) * 10)  # noqa: E731
+    hole = outline["holes"][0]
+    outer = outline["outer"] if area(outline["outer"]) > 0 else outline["outer"][::-1]
+    hole_rev = hole if area(hole) < 0 else hole[::-1]
+    hx = [tf(x, y)[0] for x, y in hole]
+    hy = [tf(x, y)[1] for x, y in hole]
+    return {
+        "viewBox": f"0 0 {(max(xs) - x0) * 10:.1f} {(y1 - min(ys)) * 10:.1f}",
+        "outline": ring_path(outer, tf) + ring_path(hole_rev, tf),
+        "cavity": ring_path(hole, tf),
+        "cavityBox": [round(min(hx), 1), round(min(hy), 1), round(max(hx) - min(hx), 1), round(max(hy) - min(hy), 1)],
+        "arrow": ring_path(arrow["outer"], tf),
+    }
+
+
 def main():
     logo = json.loads(Path(sys.argv[1] if len(sys.argv) > 1 else DEFAULT_LOGO).read_text())
     shapes = logo["shapes"]
@@ -57,6 +88,9 @@ def main():
         "export const ICONS = {",
         *(f'  "{name}": "{path_for([shapes[i] for i in idx])}",' for name, idx in ICONS.items()),
         "};",
+        "",
+        "// The middle battery for the Overview's state-of-charge gauge (0.1 mm units).",
+        f"export const BATTERY = {json.dumps(gauge(shapes), indent=2)};",
         "",
     ]
     out = HERE.parent / "src" / "icons.js"

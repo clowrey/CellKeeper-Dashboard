@@ -3,6 +3,9 @@ import "./cards/styled-card.js";
 import "./cards/state-tile.js";
 import "./cards/event-grid.js";
 import "./cards/title-card.js";
+import "./overview/pack-card.js";
+import "./overview/cells-card.js";
+import "./overview/stat-card.js";
 import { CellKeeperDashboardStrategy } from "./strategy.js";
 import { define } from "./context.js";
 

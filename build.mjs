@@ -9,7 +9,7 @@ const options = {
   bundle: true,
   format: "esm",
   target: "es2021",
-  minify: false,
+  minify: true,
   legalComments: "none",
   banner: { js: `/* CellKeeper Dashboard ${version} - https://github.com/clowrey/CellKeeper-Dashboard */` },
   define: { __VERSION__: JSON.stringify(version) },

@@ -53,7 +53,8 @@ export function activeEventsCard(ctx) {
   return { type: "custom:cellkeeper-event-grid", prefix: ctx.prefix, show: "active", title: "Active Events", columns: 2 };
 }
 
-export function overviewView(ctx, options) {
+// The original gauge layout, kept as `overview: classic`.
+export function classicOverviewView(ctx, options) {
   return {
     title: "Overview",
     type: "sections",
@@ -85,6 +86,87 @@ export function overviewView(ctx, options) {
               },
             ],
           }),
+        ],
+      },
+    ]),
+  };
+}
+
+// Button tile that asks before pressing.
+function pressTile(ctx, key, name, icon, color, confirm) {
+  const entity = ctx.id("button", key);
+  const press = {
+    action: "perform-action",
+    perform_action: "button.press",
+    target: { entity_id: entity },
+    confirmation: { text: confirm },
+  };
+  return entityCard(ctx, {
+    type: "tile",
+    entity,
+    name,
+    icon,
+    color,
+    hide_state: true,
+    vertical: false,
+    tap_action: press,
+    icon_tap_action: press,
+  });
+}
+
+function statCard(ctx, kind, sensor, navigate) {
+  return ctx.has(ctx.id("sensor", sensor))
+    ? { type: "custom:cellkeeper-stat-card", prefix: ctx.prefix, kind, ...(navigate && { navigate }) }
+    : null;
+}
+
+export function overviewView(ctx, options) {
+  if (options.overview === "classic") return classicOverviewView(ctx, options);
+  const hasCells = ctx.cellIds("cell_voltage").length > 0;
+  return {
+    title: "Overview",
+    type: "sections",
+    max_columns: 4,
+    sections: sections([
+      {
+        column_span: 4,
+        cards: [
+          ctx.has(ctx.id("sensor", "soc"))
+            ? { type: "custom:cellkeeper-pack-card", prefix: ctx.prefix, ...(options.pack_name && { title: options.pack_name }) }
+            : null,
+        ],
+      },
+      {
+        column_span: 2,
+        cards: [
+          hasCells ? { type: "custom:cellkeeper-cells-card", prefix: ctx.prefix } : null,
+          gridCard({
+            type: "grid",
+            columns: 3,
+            square: false,
+            grid_options: { columns: "full" },
+            cards: [
+              pressTile(ctx, "run", "Run", "mdi:play", "green", "Start the BMS? It will close the contactors."),
+              pressTile(ctx, "stop", "Stop", "mdi:stop", "red", "Stop the BMS? It will open the contactors."),
+              pressTile(
+                ctx,
+                "calibrate",
+                "Calibrate",
+                "mdi:wrench",
+                "amber",
+                "Run the offline calibration? Only with the inverter disconnected and the contactors open."
+              ),
+            ],
+          }),
+        ],
+      },
+      {
+        column_span: 2,
+        cards: [
+          statCard(ctx, "temperature", "module_temperature_max", "detail"),
+          statCard(ctx, "energy", "energy_daily_charge"),
+          statCard(ctx, "isolation", "isolation_resistance", "configuration"),
+          statCard(ctx, "inverter", "inverter_can_soc"),
         ],
       },
     ]),

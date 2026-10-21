@@ -67,12 +67,19 @@ check("older firmware: no Balance Charge section", !oldText.includes('"Balance C
 check("older firmware: no module ID event tiles", !oldText.includes("module_id"));
 
 const custom = await generateDashboard(
-  { prefix, hide_views: ["note", "cells_3d"], gauges: { pack_voltage: { min: 40, max: 58 } } },
+  { prefix, overview: "classic", hide_views: ["note", "cells_3d"], gauges: { pack_voltage: { min: 40, max: 58 } } },
   hass
 );
 const packGauge = JSON.stringify(custom.views[0]).match(/"entity":"sensor\.\w+_pack_internal_voltage"[^}]*/)[0];
-check("gauges option overrides min/max", packGauge.includes('"min":40') && packGauge.includes('"max":58'));
+check("classic overview: gauges option overrides min/max", packGauge.includes('"min":40') && packGauge.includes('"max":58'));
 check("hide_views drops views", !custom.views.some((v) => v.title === "Note" || v.title === "Cells 3D"));
+
+const overviewTypes = JSON.stringify(config.views[0]);
+check(
+  "overview has pack, cells and stat cards",
+  ["cellkeeper-pack-card", "cellkeeper-cells-card", "cellkeeper-stat-card"].every((t) => overviewTypes.includes(t))
+);
+check("views have paths", config.views.every((v) => v.path));
 
 const none = await generateDashboard({ prefix: "nope" }, hass);
 check("unknown prefix: one view explaining it", none.views.length === 1 && JSON.stringify(none).includes("No CellKeeper entities"));
