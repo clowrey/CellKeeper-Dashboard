@@ -1,0 +1,1985 @@
+{
+"device_name": "ck0",
+"entities": [
+[
+"switch.ck0_audio_amplifier",
+"Audio Amplifier"
+],
+[
+"number.ck0_auto_balancing_period",
+"Auto Balancing Period"
+],
+[
+"sensor.ck0_balance_cycle_time_remaining",
+"Balance Cycle Time Remaining"
+],
+[
+"number.ck0_balance_min_offset",
+"Balance Min Offset"
+],
+[
+"number.ck0_balancing_periods_per_mv",
+"Balancing Periods per mV"
+],
+[
+"number.ck0_balancing_start_voltage",
+"Balancing Start Voltage"
+],
+[
+"sensor.ck0_bssid",
+"BSSID"
+],
+[
+"button.ck0_calibrate",
+"Calibrate"
+],
+[
+"button.ck0_calibrate_online",
+"Calibrate Online"
+],
+[
+"button.ck0_calibrate_short",
+"Calibrate Short"
+],
+[
+"sensor.ck0_capacity",
+"Capacity"
+],
+[
+"sensor.ck0_cell_balancing_time_001",
+"Cell Balancing Time 001"
+],
+[
+"sensor.ck0_cell_balancing_time_002",
+"Cell Balancing Time 002"
+],
+[
+"sensor.ck0_cell_balancing_time_003",
+"Cell Balancing Time 003"
+],
+[
+"sensor.ck0_cell_balancing_time_004",
+"Cell Balancing Time 004"
+],
+[
+"sensor.ck0_cell_balancing_time_005",
+"Cell Balancing Time 005"
+],
+[
+"sensor.ck0_cell_balancing_time_006",
+"Cell Balancing Time 006"
+],
+[
+"sensor.ck0_cell_balancing_time_007",
+"Cell Balancing Time 007"
+],
+[
+"sensor.ck0_cell_balancing_time_008",
+"Cell Balancing Time 008"
+],
+[
+"sensor.ck0_cell_balancing_time_009",
+"Cell Balancing Time 009"
+],
+[
+"sensor.ck0_cell_balancing_time_010",
+"Cell Balancing Time 010"
+],
+[
+"sensor.ck0_cell_balancing_time_011",
+"Cell Balancing Time 011"
+],
+[
+"sensor.ck0_cell_balancing_time_012",
+"Cell Balancing Time 012"
+],
+[
+"sensor.ck0_cell_balancing_time_013",
+"Cell Balancing Time 013"
+],
+[
+"sensor.ck0_cell_balancing_time_014",
+"Cell Balancing Time 014"
+],
+[
+"sensor.ck0_cell_balancing_time_015",
+"Cell Balancing Time 015"
+],
+[
+"sensor.ck0_cell_balancing_time_016",
+"Cell Balancing Time 016"
+],
+[
+"sensor.ck0_cell_balancing_time_017",
+"Cell Balancing Time 017"
+],
+[
+"sensor.ck0_cell_balancing_time_018",
+"Cell Balancing Time 018"
+],
+[
+"sensor.ck0_cell_balancing_time_019",
+"Cell Balancing Time 019"
+],
+[
+"sensor.ck0_cell_balancing_time_020",
+"Cell Balancing Time 020"
+],
+[
+"sensor.ck0_cell_balancing_time_021",
+"Cell Balancing Time 021"
+],
+[
+"sensor.ck0_cell_balancing_time_022",
+"Cell Balancing Time 022"
+],
+[
+"sensor.ck0_cell_balancing_time_023",
+"Cell Balancing Time 023"
+],
+[
+"sensor.ck0_cell_balancing_time_024",
+"Cell Balancing Time 024"
+],
+[
+"sensor.ck0_cell_balancing_time_025",
+"Cell Balancing Time 025"
+],
+[
+"sensor.ck0_cell_balancing_time_026",
+"Cell Balancing Time 026"
+],
+[
+"sensor.ck0_cell_balancing_time_027",
+"Cell Balancing Time 027"
+],
+[
+"sensor.ck0_cell_balancing_time_028",
+"Cell Balancing Time 028"
+],
+[
+"sensor.ck0_cell_balancing_time_029",
+"Cell Balancing Time 029"
+],
+[
+"sensor.ck0_cell_balancing_time_030",
+"Cell Balancing Time 030"
+],
+[
+"sensor.ck0_cell_balancing_time_031",
+"Cell Balancing Time 031"
+],
+[
+"sensor.ck0_cell_balancing_time_032",
+"Cell Balancing Time 032"
+],
+[
+"sensor.ck0_cell_balancing_time_033",
+"Cell Balancing Time 033"
+],
+[
+"sensor.ck0_cell_balancing_time_034",
+"Cell Balancing Time 034"
+],
+[
+"sensor.ck0_cell_balancing_time_035",
+"Cell Balancing Time 035"
+],
+[
+"sensor.ck0_cell_balancing_time_036",
+"Cell Balancing Time 036"
+],
+[
+"sensor.ck0_cell_balancing_time_037",
+"Cell Balancing Time 037"
+],
+[
+"sensor.ck0_cell_balancing_time_038",
+"Cell Balancing Time 038"
+],
+[
+"sensor.ck0_cell_balancing_time_039",
+"Cell Balancing Time 039"
+],
+[
+"sensor.ck0_cell_balancing_time_040",
+"Cell Balancing Time 040"
+],
+[
+"sensor.ck0_cell_balancing_time_041",
+"Cell Balancing Time 041"
+],
+[
+"sensor.ck0_cell_balancing_time_042",
+"Cell Balancing Time 042"
+],
+[
+"sensor.ck0_cell_balancing_time_043",
+"Cell Balancing Time 043"
+],
+[
+"sensor.ck0_cell_balancing_time_044",
+"Cell Balancing Time 044"
+],
+[
+"sensor.ck0_cell_balancing_time_045",
+"Cell Balancing Time 045"
+],
+[
+"sensor.ck0_cell_balancing_time_046",
+"Cell Balancing Time 046"
+],
+[
+"sensor.ck0_cell_balancing_time_047",
+"Cell Balancing Time 047"
+],
+[
+"sensor.ck0_cell_balancing_time_048",
+"Cell Balancing Time 048"
+],
+[
+"sensor.ck0_cell_balancing_time_049",
+"Cell Balancing Time 049"
+],
+[
+"sensor.ck0_cell_balancing_time_050",
+"Cell Balancing Time 050"
+],
+[
+"sensor.ck0_cell_balancing_time_051",
+"Cell Balancing Time 051"
+],
+[
+"sensor.ck0_cell_balancing_time_052",
+"Cell Balancing Time 052"
+],
+[
+"sensor.ck0_cell_balancing_time_053",
+"Cell Balancing Time 053"
+],
+[
+"sensor.ck0_cell_balancing_time_054",
+"Cell Balancing Time 054"
+],
+[
+"sensor.ck0_cell_balancing_time_055",
+"Cell Balancing Time 055"
+],
+[
+"sensor.ck0_cell_balancing_time_056",
+"Cell Balancing Time 056"
+],
+[
+"sensor.ck0_cell_balancing_time_057",
+"Cell Balancing Time 057"
+],
+[
+"sensor.ck0_cell_balancing_time_058",
+"Cell Balancing Time 058"
+],
+[
+"sensor.ck0_cell_balancing_time_059",
+"Cell Balancing Time 059"
+],
+[
+"sensor.ck0_cell_balancing_time_060",
+"Cell Balancing Time 060"
+],
+[
+"sensor.ck0_cell_balancing_time_061",
+"Cell Balancing Time 061"
+],
+[
+"sensor.ck0_cell_balancing_time_062",
+"Cell Balancing Time 062"
+],
+[
+"sensor.ck0_cell_balancing_time_063",
+"Cell Balancing Time 063"
+],
+[
+"sensor.ck0_cell_balancing_time_064",
+"Cell Balancing Time 064"
+],
+[
+"sensor.ck0_cell_balancing_time_065",
+"Cell Balancing Time 065"
+],
+[
+"sensor.ck0_cell_balancing_time_066",
+"Cell Balancing Time 066"
+],
+[
+"sensor.ck0_cell_balancing_time_067",
+"Cell Balancing Time 067"
+],
+[
+"sensor.ck0_cell_balancing_time_068",
+"Cell Balancing Time 068"
+],
+[
+"sensor.ck0_cell_balancing_time_069",
+"Cell Balancing Time 069"
+],
+[
+"sensor.ck0_cell_balancing_time_070",
+"Cell Balancing Time 070"
+],
+[
+"sensor.ck0_cell_balancing_time_071",
+"Cell Balancing Time 071"
+],
+[
+"sensor.ck0_cell_balancing_time_072",
+"Cell Balancing Time 072"
+],
+[
+"sensor.ck0_cell_balancing_time_073",
+"Cell Balancing Time 073"
+],
+[
+"sensor.ck0_cell_balancing_time_074",
+"Cell Balancing Time 074"
+],
+[
+"sensor.ck0_cell_balancing_time_075",
+"Cell Balancing Time 075"
+],
+[
+"sensor.ck0_cell_balancing_time_076",
+"Cell Balancing Time 076"
+],
+[
+"sensor.ck0_cell_balancing_time_077",
+"Cell Balancing Time 077"
+],
+[
+"sensor.ck0_cell_balancing_time_078",
+"Cell Balancing Time 078"
+],
+[
+"sensor.ck0_cell_balancing_time_079",
+"Cell Balancing Time 079"
+],
+[
+"sensor.ck0_cell_balancing_time_080",
+"Cell Balancing Time 080"
+],
+[
+"sensor.ck0_cell_balancing_time_081",
+"Cell Balancing Time 081"
+],
+[
+"sensor.ck0_cell_balancing_time_082",
+"Cell Balancing Time 082"
+],
+[
+"sensor.ck0_cell_balancing_time_083",
+"Cell Balancing Time 083"
+],
+[
+"sensor.ck0_cell_balancing_time_084",
+"Cell Balancing Time 084"
+],
+[
+"sensor.ck0_cell_balancing_time_085",
+"Cell Balancing Time 085"
+],
+[
+"sensor.ck0_cell_balancing_time_086",
+"Cell Balancing Time 086"
+],
+[
+"sensor.ck0_cell_balancing_time_087",
+"Cell Balancing Time 087"
+],
+[
+"sensor.ck0_cell_balancing_time_088",
+"Cell Balancing Time 088"
+],
+[
+"sensor.ck0_cell_balancing_time_089",
+"Cell Balancing Time 089"
+],
+[
+"sensor.ck0_cell_balancing_time_090",
+"Cell Balancing Time 090"
+],
+[
+"sensor.ck0_cell_balancing_time_091",
+"Cell Balancing Time 091"
+],
+[
+"sensor.ck0_cell_balancing_time_092",
+"Cell Balancing Time 092"
+],
+[
+"sensor.ck0_cell_balancing_time_093",
+"Cell Balancing Time 093"
+],
+[
+"sensor.ck0_cell_balancing_time_094",
+"Cell Balancing Time 094"
+],
+[
+"sensor.ck0_cell_balancing_time_095",
+"Cell Balancing Time 095"
+],
+[
+"sensor.ck0_cell_balancing_time_096",
+"Cell Balancing Time 096"
+],
+[
+"sensor.ck0_cell_balancing_time_097",
+"Cell Balancing Time 097"
+],
+[
+"sensor.ck0_cell_balancing_time_098",
+"Cell Balancing Time 098"
+],
+[
+"sensor.ck0_cell_balancing_time_099",
+"Cell Balancing Time 099"
+],
+[
+"sensor.ck0_cell_balancing_time_100",
+"Cell Balancing Time 100"
+],
+[
+"sensor.ck0_cell_balancing_time_101",
+"Cell Balancing Time 101"
+],
+[
+"sensor.ck0_cell_balancing_time_102",
+"Cell Balancing Time 102"
+],
+[
+"sensor.ck0_cell_balancing_time_103",
+"Cell Balancing Time 103"
+],
+[
+"sensor.ck0_cell_balancing_time_104",
+"Cell Balancing Time 104"
+],
+[
+"sensor.ck0_cell_balancing_time_105",
+"Cell Balancing Time 105"
+],
+[
+"sensor.ck0_cell_balancing_time_106",
+"Cell Balancing Time 106"
+],
+[
+"sensor.ck0_cell_balancing_time_107",
+"Cell Balancing Time 107"
+],
+[
+"sensor.ck0_cell_balancing_time_108",
+"Cell Balancing Time 108"
+],
+[
+"sensor.ck0_cell_count",
+"Cell Count"
+],
+[
+"sensor.ck0_cell_voltage_001",
+"Cell Voltage 001"
+],
+[
+"sensor.ck0_cell_voltage_002",
+"Cell Voltage 002"
+],
+[
+"sensor.ck0_cell_voltage_003",
+"Cell Voltage 003"
+],
+[
+"sensor.ck0_cell_voltage_004",
+"Cell Voltage 004"
+],
+[
+"sensor.ck0_cell_voltage_005",
+"Cell Voltage 005"
+],
+[
+"sensor.ck0_cell_voltage_006",
+"Cell Voltage 006"
+],
+[
+"sensor.ck0_cell_voltage_007",
+"Cell Voltage 007"
+],
+[
+"sensor.ck0_cell_voltage_008",
+"Cell Voltage 008"
+],
+[
+"sensor.ck0_cell_voltage_009",
+"Cell Voltage 009"
+],
+[
+"sensor.ck0_cell_voltage_010",
+"Cell Voltage 010"
+],
+[
+"sensor.ck0_cell_voltage_011",
+"Cell Voltage 011"
+],
+[
+"sensor.ck0_cell_voltage_012",
+"Cell Voltage 012"
+],
+[
+"sensor.ck0_cell_voltage_013",
+"Cell Voltage 013"
+],
+[
+"sensor.ck0_cell_voltage_014",
+"Cell Voltage 014"
+],
+[
+"sensor.ck0_cell_voltage_015",
+"Cell Voltage 015"
+],
+[
+"sensor.ck0_cell_voltage_016",
+"Cell Voltage 016"
+],
+[
+"sensor.ck0_cell_voltage_017",
+"Cell Voltage 017"
+],
+[
+"sensor.ck0_cell_voltage_018",
+"Cell Voltage 018"
+],
+[
+"sensor.ck0_cell_voltage_019",
+"Cell Voltage 019"
+],
+[
+"sensor.ck0_cell_voltage_020",
+"Cell Voltage 020"
+],
+[
+"sensor.ck0_cell_voltage_021",
+"Cell Voltage 021"
+],
+[
+"sensor.ck0_cell_voltage_022",
+"Cell Voltage 022"
+],
+[
+"sensor.ck0_cell_voltage_023",
+"Cell Voltage 023"
+],
+[
+"sensor.ck0_cell_voltage_024",
+"Cell Voltage 024"
+],
+[
+"sensor.ck0_cell_voltage_025",
+"Cell Voltage 025"
+],
+[
+"sensor.ck0_cell_voltage_026",
+"Cell Voltage 026"
+],
+[
+"sensor.ck0_cell_voltage_027",
+"Cell Voltage 027"
+],
+[
+"sensor.ck0_cell_voltage_028",
+"Cell Voltage 028"
+],
+[
+"sensor.ck0_cell_voltage_029",
+"Cell Voltage 029"
+],
+[
+"sensor.ck0_cell_voltage_030",
+"Cell Voltage 030"
+],
+[
+"sensor.ck0_cell_voltage_031",
+"Cell Voltage 031"
+],
+[
+"sensor.ck0_cell_voltage_032",
+"Cell Voltage 032"
+],
+[
+"sensor.ck0_cell_voltage_033",
+"Cell Voltage 033"
+],
+[
+"sensor.ck0_cell_voltage_034",
+"Cell Voltage 034"
+],
+[
+"sensor.ck0_cell_voltage_035",
+"Cell Voltage 035"
+],
+[
+"sensor.ck0_cell_voltage_036",
+"Cell Voltage 036"
+],
+[
+"sensor.ck0_cell_voltage_037",
+"Cell Voltage 037"
+],
+[
+"sensor.ck0_cell_voltage_038",
+"Cell Voltage 038"
+],
+[
+"sensor.ck0_cell_voltage_039",
+"Cell Voltage 039"
+],
+[
+"sensor.ck0_cell_voltage_040",
+"Cell Voltage 040"
+],
+[
+"sensor.ck0_cell_voltage_041",
+"Cell Voltage 041"
+],
+[
+"sensor.ck0_cell_voltage_042",
+"Cell Voltage 042"
+],
+[
+"sensor.ck0_cell_voltage_043",
+"Cell Voltage 043"
+],
+[
+"sensor.ck0_cell_voltage_044",
+"Cell Voltage 044"
+],
+[
+"sensor.ck0_cell_voltage_045",
+"Cell Voltage 045"
+],
+[
+"sensor.ck0_cell_voltage_046",
+"Cell Voltage 046"
+],
+[
+"sensor.ck0_cell_voltage_047",
+"Cell Voltage 047"
+],
+[
+"sensor.ck0_cell_voltage_048",
+"Cell Voltage 048"
+],
+[
+"sensor.ck0_cell_voltage_049",
+"Cell Voltage 049"
+],
+[
+"sensor.ck0_cell_voltage_050",
+"Cell Voltage 050"
+],
+[
+"sensor.ck0_cell_voltage_051",
+"Cell Voltage 051"
+],
+[
+"sensor.ck0_cell_voltage_052",
+"Cell Voltage 052"
+],
+[
+"sensor.ck0_cell_voltage_053",
+"Cell Voltage 053"
+],
+[
+"sensor.ck0_cell_voltage_054",
+"Cell Voltage 054"
+],
+[
+"sensor.ck0_cell_voltage_055",
+"Cell Voltage 055"
+],
+[
+"sensor.ck0_cell_voltage_056",
+"Cell Voltage 056"
+],
+[
+"sensor.ck0_cell_voltage_057",
+"Cell Voltage 057"
+],
+[
+"sensor.ck0_cell_voltage_058",
+"Cell Voltage 058"
+],
+[
+"sensor.ck0_cell_voltage_059",
+"Cell Voltage 059"
+],
+[
+"sensor.ck0_cell_voltage_060",
+"Cell Voltage 060"
+],
+[
+"sensor.ck0_cell_voltage_061",
+"Cell Voltage 061"
+],
+[
+"sensor.ck0_cell_voltage_062",
+"Cell Voltage 062"
+],
+[
+"sensor.ck0_cell_voltage_063",
+"Cell Voltage 063"
+],
+[
+"sensor.ck0_cell_voltage_064",
+"Cell Voltage 064"
+],
+[
+"sensor.ck0_cell_voltage_065",
+"Cell Voltage 065"
+],
+[
+"sensor.ck0_cell_voltage_066",
+"Cell Voltage 066"
+],
+[
+"sensor.ck0_cell_voltage_067",
+"Cell Voltage 067"
+],
+[
+"sensor.ck0_cell_voltage_068",
+"Cell Voltage 068"
+],
+[
+"sensor.ck0_cell_voltage_069",
+"Cell Voltage 069"
+],
+[
+"sensor.ck0_cell_voltage_070",
+"Cell Voltage 070"
+],
+[
+"sensor.ck0_cell_voltage_071",
+"Cell Voltage 071"
+],
+[
+"sensor.ck0_cell_voltage_072",
+"Cell Voltage 072"
+],
+[
+"sensor.ck0_cell_voltage_073",
+"Cell Voltage 073"
+],
+[
+"sensor.ck0_cell_voltage_074",
+"Cell Voltage 074"
+],
+[
+"sensor.ck0_cell_voltage_075",
+"Cell Voltage 075"
+],
+[
+"sensor.ck0_cell_voltage_076",
+"Cell Voltage 076"
+],
+[
+"sensor.ck0_cell_voltage_077",
+"Cell Voltage 077"
+],
+[
+"sensor.ck0_cell_voltage_078",
+"Cell Voltage 078"
+],
+[
+"sensor.ck0_cell_voltage_079",
+"Cell Voltage 079"
+],
+[
+"sensor.ck0_cell_voltage_080",
+"Cell Voltage 080"
+],
+[
+"sensor.ck0_cell_voltage_081",
+"Cell Voltage 081"
+],
+[
+"sensor.ck0_cell_voltage_082",
+"Cell Voltage 082"
+],
+[
+"sensor.ck0_cell_voltage_083",
+"Cell Voltage 083"
+],
+[
+"sensor.ck0_cell_voltage_084",
+"Cell Voltage 084"
+],
+[
+"sensor.ck0_cell_voltage_085",
+"Cell Voltage 085"
+],
+[
+"sensor.ck0_cell_voltage_086",
+"Cell Voltage 086"
+],
+[
+"sensor.ck0_cell_voltage_087",
+"Cell Voltage 087"
+],
+[
+"sensor.ck0_cell_voltage_088",
+"Cell Voltage 088"
+],
+[
+"sensor.ck0_cell_voltage_089",
+"Cell Voltage 089"
+],
+[
+"sensor.ck0_cell_voltage_090",
+"Cell Voltage 090"
+],
+[
+"sensor.ck0_cell_voltage_091",
+"Cell Voltage 091"
+],
+[
+"sensor.ck0_cell_voltage_092",
+"Cell Voltage 092"
+],
+[
+"sensor.ck0_cell_voltage_093",
+"Cell Voltage 093"
+],
+[
+"sensor.ck0_cell_voltage_094",
+"Cell Voltage 094"
+],
+[
+"sensor.ck0_cell_voltage_095",
+"Cell Voltage 095"
+],
+[
+"sensor.ck0_cell_voltage_096",
+"Cell Voltage 096"
+],
+[
+"sensor.ck0_cell_voltage_097",
+"Cell Voltage 097"
+],
+[
+"sensor.ck0_cell_voltage_098",
+"Cell Voltage 098"
+],
+[
+"sensor.ck0_cell_voltage_099",
+"Cell Voltage 099"
+],
+[
+"sensor.ck0_cell_voltage_100",
+"Cell Voltage 100"
+],
+[
+"sensor.ck0_cell_voltage_101",
+"Cell Voltage 101"
+],
+[
+"sensor.ck0_cell_voltage_102",
+"Cell Voltage 102"
+],
+[
+"sensor.ck0_cell_voltage_103",
+"Cell Voltage 103"
+],
+[
+"sensor.ck0_cell_voltage_104",
+"Cell Voltage 104"
+],
+[
+"sensor.ck0_cell_voltage_105",
+"Cell Voltage 105"
+],
+[
+"sensor.ck0_cell_voltage_106",
+"Cell Voltage 106"
+],
+[
+"sensor.ck0_cell_voltage_107",
+"Cell Voltage 107"
+],
+[
+"sensor.ck0_cell_voltage_108",
+"Cell Voltage 108"
+],
+[
+"sensor.ck0_cell_voltage_delta",
+"Cell Voltage Delta"
+],
+[
+"sensor.ck0_cell_voltage_max",
+"Cell Voltage Max"
+],
+[
+"sensor.ck0_cell_voltage_min",
+"Cell Voltage Min"
+],
+[
+"number.ck0_cell_voltage_soft_max",
+"Cell Voltage Soft Max"
+],
+[
+"number.ck0_cell_voltage_soft_min",
+"Cell Voltage Soft Min"
+],
+[
+"number.ck0_cell_voltage_working_max",
+"Cell Voltage Working Max"
+],
+[
+"number.ck0_cell_voltage_working_min",
+"Cell Voltage Working Min"
+],
+[
+"sensor.ck0_cells_balancing",
+"Cells Balancing"
+],
+[
+"sensor.ck0_cells_balancing_active",
+"Cells Balancing Active"
+],
+[
+"sensor.ck0_cells_balancing_active_count",
+"Cells Balancing Active Count"
+],
+[
+"sensor.ck0_cells_balancing_count",
+"Cells Balancing Count"
+],
+[
+"sensor.ck0_charge_raw",
+"Charge Raw"
+],
+[
+"sensor.ck0_contactor_state",
+"Contactor State"
+],
+[
+"sensor.ck0_contactor_state_text",
+"Contactor State Text"
+],
+[
+"sensor.ck0_contactor_voltage_negative",
+"Contactor Voltage Negative"
+],
+[
+"sensor.ck0_contactor_voltage_positive",
+"Contactor Voltage Positive"
+],
+[
+"sensor.ck0_current",
+"Current"
+],
+[
+"sensor.ck0_current_limit_cell_voltage_charge",
+"Current Limit Cell Voltage Charge"
+],
+[
+"sensor.ck0_current_limit_cell_voltage_discharge",
+"Current Limit Cell Voltage Discharge"
+],
+[
+"sensor.ck0_current_limit_delta_charge",
+"Current Limit Delta Charge"
+],
+[
+"sensor.ck0_current_limit_effective_charge",
+"Current Limit Effective Charge"
+],
+[
+"sensor.ck0_current_limit_effective_discharge",
+"Current Limit Effective Discharge"
+],
+[
+"sensor.ck0_current_limit_hard_charge",
+"Current Limit Hard Charge"
+],
+[
+"sensor.ck0_current_limit_hard_discharge",
+"Current Limit Hard Discharge"
+],
+[
+"sensor.ck0_current_limit_temperature_charge",
+"Current Limit Temperature Charge"
+],
+[
+"sensor.ck0_current_limit_temperature_discharge",
+"Current Limit Temperature Discharge"
+],
+[
+"sensor.ck0_current_limit_working_charge",
+"Current Limit Working Charge"
+],
+[
+"sensor.ck0_current_limit_working_discharge",
+"Current Limit Working Discharge"
+],
+[
+"light.ck0_display_backlight",
+"Display Backlight"
+],
+[
+"sensor.ck0_energy_daily_charge",
+"Energy Daily Charge"
+],
+[
+"sensor.ck0_energy_daily_discharge",
+"Energy Daily Discharge"
+],
+[
+"sensor.ck0_energy_daily_net",
+"Energy Daily Net"
+],
+[
+"sensor.ck0_event_critical_3v3_high",
+"Event Critical 3V3 High"
+],
+[
+"sensor.ck0_event_critical_3v3_low",
+"Event Critical 3V3 Low"
+],
+[
+"sensor.ck0_event_critical_battery_temperature_very_high",
+"Event Critical Battery Temperature Very High"
+],
+[
+"sensor.ck0_event_critical_battery_temperature_very_low",
+"Event Critical Battery Temperature Very Low"
+],
+[
+"sensor.ck0_event_critical_battery_voltage_very_high",
+"Event Critical Battery Voltage Very High"
+],
+[
+"sensor.ck0_event_critical_battery_voltage_very_low",
+"Event Critical Battery Voltage Very Low"
+],
+[
+"sensor.ck0_event_critical_bmb_crc_mismatch",
+"Event Critical BMB CRC Mismatch"
+],
+[
+"sensor.ck0_event_critical_bmb_read_error",
+"Event Critical BMB Read Error"
+],
+[
+"sensor.ck0_event_critical_cell_voltage_very_high",
+"Event Critical Cell Voltage Very High"
+],
+[
+"sensor.ck0_event_critical_cell_voltage_very_low",
+"Event Critical Cell Voltage Very Low"
+],
+[
+"sensor.ck0_event_critical_closing_failed",
+"Event Critical Closing Failed"
+],
+[
+"sensor.ck0_event_critical_ctr_supply_low",
+"Event Critical Ctr Supply Low"
+],
+[
+"sensor.ck0_event_critical_neg_unexpected_open",
+"Event Critical NEG Unexpected Open"
+],
+[
+"sensor.ck0_event_critical_overcurrent_charging",
+"Event Critical Overcurrent Charging"
+],
+[
+"sensor.ck0_event_critical_overcurrent_discharging",
+"Event Critical Overcurrent Discharging"
+],
+[
+"sensor.ck0_event_critical_pos_unexpected_open",
+"Event Critical POS Unexpected Open"
+],
+[
+"sensor.ck0_event_critical_pre_current_high",
+"Event Critical PRE Current High"
+],
+[
+"sensor.ck0_event_critical_pre_voltage_high",
+"Event Critical PRE Voltage High"
+],
+[
+"sensor.ck0_event_critical_voltage_mismatch",
+"Event Critical Voltage Mismatch"
+],
+[
+"sensor.ck0_event_fatal_ctr_supply_very_low",
+"Event Fatal Ctr Supply Very Low"
+],
+[
+"sensor.ck0_event_fatal_e_stop_pressed",
+"Event Fatal E-Stop Pressed"
+],
+[
+"sensor.ck0_event_fatal_neg_stuck_closed",
+"Event Fatal NEG Stuck Closed"
+],
+[
+"sensor.ck0_event_fatal_neg_stuck_open",
+"Event Fatal NEG Stuck Open"
+],
+[
+"sensor.ck0_event_fatal_pos_stuck_closed",
+"Event Fatal POS Stuck Closed"
+],
+[
+"sensor.ck0_event_fatal_pos_stuck_open",
+"Event Fatal POS Stuck Open"
+],
+[
+"sensor.ck0_event_fatal_pre_stuck_closed",
+"Event Fatal PRE Stuck Closed"
+],
+[
+"sensor.ck0_event_fatal_pre_stuck_open",
+"Event Fatal PRE Stuck Open"
+],
+[
+"sensor.ck0_event_history",
+"Event History"
+],
+[
+"sensor.ck0_event_info_boot_normal",
+"Event Info Boot Normal"
+],
+[
+"sensor.ck0_event_info_boot_watchdog",
+"Event Info Boot Watchdog"
+],
+[
+"sensor.ck0_event_info_inverter_detected",
+"Event Info Inverter Detected"
+],
+[
+"sensor.ck0_event_info_restarting",
+"Event Info Restarting"
+],
+[
+"sensor.ck0_event_warning_5v_high",
+"Event Warning 5V High"
+],
+[
+"sensor.ck0_event_warning_5v_low",
+"Event Warning 5V Low"
+],
+[
+"sensor.ck0_event_warning_12v_high",
+"Event Warning 12V High"
+],
+[
+"sensor.ck0_event_warning_12v_low",
+"Event Warning 12V Low"
+],
+[
+"sensor.ck0_event_warning_battery_temperature_high",
+"Event Warning Battery Temperature High"
+],
+[
+"sensor.ck0_event_warning_battery_temperature_low",
+"Event Warning Battery Temperature Low"
+],
+[
+"sensor.ck0_event_warning_battery_temperature_stale",
+"Event Warning Battery Temperature Stale"
+],
+[
+"sensor.ck0_event_warning_battery_voltage_high",
+"Event Warning Battery Voltage High"
+],
+[
+"sensor.ck0_event_warning_battery_voltage_low",
+"Event Warning Battery Voltage Low"
+],
+[
+"sensor.ck0_event_warning_battery_voltage_stale",
+"Event Warning Battery Voltage Stale"
+],
+[
+"sensor.ck0_event_warning_cell_voltage_glitch",
+"Event Warning Cell Voltage Glitch"
+],
+[
+"sensor.ck0_event_warning_cell_voltage_high",
+"Event Warning Cell Voltage High"
+],
+[
+"sensor.ck0_event_warning_cell_voltage_low",
+"Event Warning Cell Voltage Low"
+],
+[
+"sensor.ck0_event_warning_cell_voltages_stale",
+"Event Warning Cell Voltages Stale"
+],
+[
+"sensor.ck0_event_warning_ctr_supply_high",
+"Event Warning Ctr Supply High"
+],
+[
+"sensor.ck0_event_warning_current_stale",
+"Event Warning Current Stale"
+],
+[
+"sensor.ck0_event_warning_fuse_voltage_drop_high",
+"Event Warning Fuse Voltage Drop High"
+],
+[
+"sensor.ck0_event_warning_link_voltage_mismatch",
+"Event Warning Link Voltage Mismatch"
+],
+[
+"sensor.ck0_event_warning_loop_overrun",
+"Event Warning Loop Overrun"
+],
+[
+"sensor.ck0_event_warning_module_temperature_glitch",
+"Event Warning Module Temperature Glitch"
+],
+[
+"sensor.ck0_event_warning_soft_charge_exceeded",
+"Event Warning Soft Charge Exceeded"
+],
+[
+"sensor.ck0_event_warning_supply_voltage_stale",
+"Event Warning Supply Voltage Stale"
+],
+[
+"sensor.ck0_heap_free",
+"Heap Free"
+],
+[
+"sensor.ck0_heap_max_block",
+"Heap Max Block"
+],
+[
+"button.ck0_hmi_restart",
+"HMI Restart"
+],
+[
+"sensor.ck0_internal_temperature",
+"Internal Temperature"
+],
+[
+"sensor.ck0_inverter_can_capacity_full",
+"Inverter CAN Capacity Full"
+],
+[
+"sensor.ck0_inverter_can_capacity_remaining",
+"Inverter CAN Capacity Remaining"
+],
+[
+"sensor.ck0_inverter_can_soc",
+"Inverter CAN SOC"
+],
+[
+"sensor.ck0_inverter_can_voltage_limit_max",
+"Inverter CAN Voltage Limit Max"
+],
+[
+"sensor.ck0_inverter_can_voltage_limit_min",
+"Inverter CAN Voltage Limit Min"
+],
+[
+"sensor.ck0_last_event_text",
+"Last Event Text"
+],
+[
+"sensor.ck0_log_01",
+"Log 01"
+],
+[
+"sensor.ck0_log_02",
+"Log 02"
+],
+[
+"sensor.ck0_log_03",
+"Log 03"
+],
+[
+"sensor.ck0_log_04",
+"Log 04"
+],
+[
+"sensor.ck0_log_05",
+"Log 05"
+],
+[
+"sensor.ck0_log_06",
+"Log 06"
+],
+[
+"sensor.ck0_log_07",
+"Log 07"
+],
+[
+"sensor.ck0_log_08",
+"Log 08"
+],
+[
+"sensor.ck0_log_09",
+"Log 09"
+],
+[
+"sensor.ck0_log_10",
+"Log 10"
+],
+[
+"sensor.ck0_log_11",
+"Log 11"
+],
+[
+"sensor.ck0_log_12",
+"Log 12"
+],
+[
+"sensor.ck0_log_13",
+"Log 13"
+],
+[
+"sensor.ck0_log_14",
+"Log 14"
+],
+[
+"sensor.ck0_log_15",
+"Log 15"
+],
+[
+"sensor.ck0_log_16",
+"Log 16"
+],
+[
+"sensor.ck0_log_17",
+"Log 17"
+],
+[
+"sensor.ck0_log_18",
+"Log 18"
+],
+[
+"sensor.ck0_log_19",
+"Log 19"
+],
+[
+"sensor.ck0_log_20",
+"Log 20"
+],
+[
+"sensor.ck0_log_21",
+"Log 21"
+],
+[
+"sensor.ck0_log_22",
+"Log 22"
+],
+[
+"sensor.ck0_log_23",
+"Log 23"
+],
+[
+"sensor.ck0_log_24",
+"Log 24"
+],
+[
+"sensor.ck0_log_25",
+"Log 25"
+],
+[
+"sensor.ck0_log_26",
+"Log 26"
+],
+[
+"sensor.ck0_log_27",
+"Log 27"
+],
+[
+"sensor.ck0_log_28",
+"Log 28"
+],
+[
+"sensor.ck0_log_29",
+"Log 29"
+],
+[
+"sensor.ck0_log_30",
+"Log 30"
+],
+[
+"sensor.ck0_log_31",
+"Log 31"
+],
+[
+"sensor.ck0_log_32",
+"Log 32"
+],
+[
+"sensor.ck0_log_33",
+"Log 33"
+],
+[
+"sensor.ck0_log_34",
+"Log 34"
+],
+[
+"sensor.ck0_log_35",
+"Log 35"
+],
+[
+"sensor.ck0_log_36",
+"Log 36"
+],
+[
+"sensor.ck0_log_37",
+"Log 37"
+],
+[
+"sensor.ck0_log_38",
+"Log 38"
+],
+[
+"sensor.ck0_log_39",
+"Log 39"
+],
+[
+"sensor.ck0_log_40",
+"Log 40"
+],
+[
+"sensor.ck0_log_41",
+"Log 41"
+],
+[
+"sensor.ck0_log_42",
+"Log 42"
+],
+[
+"sensor.ck0_log_43",
+"Log 43"
+],
+[
+"sensor.ck0_log_44",
+"Log 44"
+],
+[
+"sensor.ck0_log_45",
+"Log 45"
+],
+[
+"sensor.ck0_log_46",
+"Log 46"
+],
+[
+"sensor.ck0_log_47",
+"Log 47"
+],
+[
+"sensor.ck0_log_48",
+"Log 48"
+],
+[
+"sensor.ck0_log_49",
+"Log 49"
+],
+[
+"sensor.ck0_log_50",
+"Log 50"
+],
+[
+"switch.ck0_log_enable",
+"Log Enable"
+],
+[
+"number.ck0_log_update_rate",
+"Log Update Rate"
+],
+[
+"sensor.ck0_loop_time",
+"Loop Time"
+],
+[
+"number.ck0_max_charge_current",
+"Max Charge Current"
+],
+[
+"number.ck0_max_discharge_current",
+"Max Discharge Current"
+],
+[
+"sensor.ck0_millis",
+"Millis"
+],
+[
+"number.ck0_minimum_balancing_voltage",
+"Minimum Balancing Voltage"
+],
+[
+"sensor.ck0_module_temperature_1",
+"Module Temperature 1"
+],
+[
+"sensor.ck0_module_temperature_2",
+"Module Temperature 2"
+],
+[
+"sensor.ck0_module_temperature_3",
+"Module Temperature 3"
+],
+[
+"sensor.ck0_module_temperature_4",
+"Module Temperature 4"
+],
+[
+"sensor.ck0_module_temperature_5",
+"Module Temperature 5"
+],
+[
+"sensor.ck0_module_temperature_6",
+"Module Temperature 6"
+],
+[
+"sensor.ck0_module_temperature_7",
+"Module Temperature 7"
+],
+[
+"sensor.ck0_module_temperature_8",
+"Module Temperature 8"
+],
+[
+"sensor.ck0_module_temperature_max",
+"Module Temperature Max"
+],
+[
+"sensor.ck0_module_temperature_min",
+"Module Temperature Min"
+],
+[
+"sensor.ck0_pack_internal_voltage",
+"Pack Internal Voltage"
+],
+[
+"sensor.ck0_pack_internal_voltage_bmb",
+"Pack Internal Voltage BMB"
+],
+[
+"sensor.ck0_pack_output_voltage",
+"Pack Output Voltage"
+],
+[
+"sensor.ck0_power",
+"Power"
+],
+[
+"sensor.ck0_power_charge",
+"Power Charge"
+],
+[
+"sensor.ck0_power_discharge",
+"Power Discharge"
+],
+[
+"sensor.ck0_power_w",
+"Power W"
+],
+[
+"sensor.ck0_raw_temp_0x20a",
+"Raw Temp 0x20A"
+],
+[
+"sensor.ck0_raw_temp_0x20b",
+"Raw Temp 0x20B"
+],
+[
+"sensor.ck0_raw_temp_0x20c",
+"Raw Temp 0x20C"
+],
+[
+"sensor.ck0_raw_temp_0x20d",
+"Raw Temp 0x20D"
+],
+[
+"sensor.ck0_raw_temp_0x20e",
+"Raw Temp 0x20E"
+],
+[
+"sensor.ck0_raw_temp_0x20f",
+"Raw Temp 0x20F"
+],
+[
+"sensor.ck0_raw_temp_0x21a",
+"Raw Temp 0x21A"
+],
+[
+"sensor.ck0_raw_temp_0x21b",
+"Raw Temp 0x21B"
+],
+[
+"sensor.ck0_raw_temp_0x21c",
+"Raw Temp 0x21C"
+],
+[
+"sensor.ck0_raw_temp_0x21d",
+"Raw Temp 0x21D"
+],
+[
+"sensor.ck0_raw_temp_0x21e",
+"Raw Temp 0x21E"
+],
+[
+"sensor.ck0_raw_temp_0x21f",
+"Raw Temp 0x21F"
+],
+[
+"sensor.ck0_raw_temp_0x22a",
+"Raw Temp 0x22A"
+],
+[
+"sensor.ck0_raw_temp_0x22b",
+"Raw Temp 0x22B"
+],
+[
+"sensor.ck0_raw_temp_0x22c",
+"Raw Temp 0x22C"
+],
+[
+"sensor.ck0_raw_temp_0x22d",
+"Raw Temp 0x22D"
+],
+[
+"sensor.ck0_raw_temp_0x22e",
+"Raw Temp 0x22E"
+],
+[
+"sensor.ck0_raw_temp_0x22f",
+"Raw Temp 0x22F"
+],
+[
+"sensor.ck0_raw_temp_0x208",
+"Raw Temp 0x208"
+],
+[
+"sensor.ck0_raw_temp_0x209",
+"Raw Temp 0x209"
+],
+[
+"sensor.ck0_raw_temp_0x210",
+"Raw Temp 0x210"
+],
+[
+"sensor.ck0_raw_temp_0x211",
+"Raw Temp 0x211"
+],
+[
+"sensor.ck0_raw_temp_0x212",
+"Raw Temp 0x212"
+],
+[
+"sensor.ck0_raw_temp_0x213",
+"Raw Temp 0x213"
+],
+[
+"sensor.ck0_raw_temp_0x214",
+"Raw Temp 0x214"
+],
+[
+"sensor.ck0_raw_temp_0x215",
+"Raw Temp 0x215"
+],
+[
+"sensor.ck0_raw_temp_0x216",
+"Raw Temp 0x216"
+],
+[
+"sensor.ck0_raw_temp_0x217",
+"Raw Temp 0x217"
+],
+[
+"sensor.ck0_raw_temp_0x218",
+"Raw Temp 0x218"
+],
+[
+"sensor.ck0_raw_temp_0x219",
+"Raw Temp 0x219"
+],
+[
+"sensor.ck0_raw_temp_0x220",
+"Raw Temp 0x220"
+],
+[
+"sensor.ck0_raw_temp_0x221",
+"Raw Temp 0x221"
+],
+[
+"sensor.ck0_raw_temp_0x222",
+"Raw Temp 0x222"
+],
+[
+"sensor.ck0_raw_temp_0x223",
+"Raw Temp 0x223"
+],
+[
+"sensor.ck0_raw_temp_0x224",
+"Raw Temp 0x224"
+],
+[
+"sensor.ck0_raw_temp_0x225",
+"Raw Temp 0x225"
+],
+[
+"sensor.ck0_raw_temp_0x226",
+"Raw Temp 0x226"
+],
+[
+"sensor.ck0_raw_temp_0x227",
+"Raw Temp 0x227"
+],
+[
+"sensor.ck0_raw_temp_0x228",
+"Raw Temp 0x228"
+],
+[
+"sensor.ck0_raw_temp_0x229",
+"Raw Temp 0x229"
+],
+[
+"sensor.ck0_raw_temp_0x230",
+"Raw Temp 0x230"
+],
+[
+"sensor.ck0_raw_temp_0x231",
+"Raw Temp 0x231"
+],
+[
+"sensor.ck0_raw_temp_0x232",
+"Raw Temp 0x232"
+],
+[
+"sensor.ck0_raw_temp_0x233",
+"Raw Temp 0x233"
+],
+[
+"sensor.ck0_raw_temp_0x234",
+"Raw Temp 0x234"
+],
+[
+"sensor.ck0_raw_temp_0x235",
+"Raw Temp 0x235"
+],
+[
+"sensor.ck0_raw_temp_0x236",
+"Raw Temp 0x236"
+],
+[
+"sensor.ck0_raw_temp_0x237",
+"Raw Temp 0x237"
+],
+[
+"button.ck0_run",
+"Run"
+],
+[
+"sensor.ck0_serial",
+"Serial"
+],
+[
+"sensor.ck0_settings_status",
+"Settings Status"
+],
+[
+"switch.ck0_settings_unlock",
+"Settings Unlock"
+],
+[
+"sensor.ck0_soc",
+"SOC"
+],
+[
+"sensor.ck0_soc_basic_count",
+"SOC Basic Count"
+],
+[
+"number.ck0_soc_scaling_max",
+"SOC Scaling Max"
+],
+[
+"number.ck0_soc_scaling_min",
+"SOC Scaling Min"
+],
+[
+"number.ck0_soc_set_cmd",
+"SOC Set Cmd"
+],
+[
+"sensor.ck0_soc_voltage_based",
+"SOC Voltage Based"
+],
+[
+"button.ck0_stop",
+"Stop"
+],
+[
+"sensor.ck0_supply_voltage_3v3",
+"Supply Voltage 3V3"
+],
+[
+"sensor.ck0_supply_voltage_5v",
+"Supply Voltage 5V"
+],
+[
+"sensor.ck0_supply_voltage_12v",
+"Supply Voltage 12V"
+],
+[
+"sensor.ck0_supply_voltage_contactor",
+"Supply Voltage Contactor"
+],
+[
+"sensor.ck0_system_request",
+"System Request"
+],
+[
+"sensor.ck0_system_request_text",
+"System Request Text"
+],
+[
+"sensor.ck0_system_state",
+"System State"
+],
+[
+"sensor.ck0_system_state_text",
+"System State Text"
+],
+[
+"sensor.ck0_uptime_hmi",
+"Uptime HMI"
+],
+[
+"sensor.ck0_uptime_pico",
+"Uptime Pico"
+],
+[
+"number.ck0_voltage_limit_offset_lower",
+"Voltage Limit Offset Lower"
+],
+[
+"number.ck0_voltage_limit_offset_upper",
+"Voltage Limit Offset Upper"
+],
+[
+"sensor.ck0_wifi_ip",
+"WiFi IP"
+],
+[
+"sensor.ck0_wifi_rssi",
+"WiFi RSSI"
+],
+[
+"sensor.ck0_wifi_ssid",
+"WiFi SSID"
+],
+[
+"sensor.ck0_isolation_resistance",
+"Isolation Resistance"
+],
+[
+"button.ck0_calibrate_isolation_zero",
+"Calibrate Isolation Zero"
+],
+[
+"sensor.ck0_pack_pos_to_chassis",
+"Pack Pos to Chassis"
+],
+[
+"sensor.ck0_pack_neg_to_chassis",
+"Pack Neg to Chassis"
+],
+[
+"sensor.ck0_isolation_check_age",
+"Isolation Check Age"
+],
+[
+"sensor.ck0_event_warning_isolation_asymmetry",
+"Event Warning Isolation Asymmetry"
+],
+[
+"sensor.ck0_board_strap_counts",
+"Board Strap Counts"
+],
+[
+"sensor.ck0_board_revision",
+"Board Revision"
+],
+[
+"sensor.ck0_event_info_contactor_port_energized",
+"Event Info Contactor Port Energized"
+],
+[
+"sensor.ck0_event_fatal_board_mismatch",
+"Event Fatal Board Mismatch"
+],
+[
+"sensor.ck0_event_warning_supervisor_not_enabled",
+"Event Warning Supervisor Not Enabled"
+],
+[
+"sensor.ck0_event_fatal_supervisor_disabled_contactors",
+"Event Fatal Supervisor Disabled Contactors"
+],
+[
+"sensor.ck0_event_warning_bmb_module_id_check_failed",
+"Event Warning BMB Module ID Check Failed"
+],
+[
+"sensor.ck0_event_info_bmb_module_id_unknown",
+"Event Info BMB Module ID Unknown"
+],
+[
+"sensor.ck0_event_fatal_bmb_module_id_conflict",
+"Event Fatal BMB Module ID Conflict"
+],
+[
+"sensor.ck0_balance_charge_status",
+"Balance Charge Status"
+],
+[
+"number.ck0_balance_charge_interval",
+"Balance Charge Interval"
+],
+[
+"number.ck0_balance_charge_start_hour",
+"Balance Charge Start Hour"
+],
+[
+"number.ck0_balance_charge_duration",
+"Balance Charge Duration"
+],
+[
+"number.ck0_float_offset_upper",
+"Float Offset Upper"
+],
+[
+"number.ck0_balance_charge_offset_upper",
+"Balance Charge Offset Upper"
+],
+[
+"button.ck0_start_balance_charge_now",
+"Start Balance Charge Now"
+],
+[
+"button.ck0_stop_balance_charge",
+"Stop Balance Charge"
+]
+]
+}
