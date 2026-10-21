@@ -63,6 +63,32 @@ Afterwards the pencil opens a small form where you can pick the prefix from the 
 Home Assistant knows about. To customise the generated dashboard by hand, use **Take control** in
 that dialog; this turns it into a normal dashboard that no longer updates itself.
 
+## Icons
+
+The plugin adds the batteries from the CellKeeper logo as icons, for example for the dashboard's
+sidebar icon (**Settings → Dashboards →** your dashboard **→ Icon**):
+
+| Icon | |
+| --- | --- |
+| `cellkeeper:battery` | the logo's middle battery: four bars and the arrow |
+| `cellkeeper:battery-arrow` | the left battery: three bars and the arrow |
+| `cellkeeper:logo` | all three batteries (busy at sidebar size) |
+
+Home Assistant loads dashboard plugins when you first open a dashboard, so if you load a
+non-dashboard page directly (say **Settings**) the sidebar shows an empty space for these icons
+until you open a dashboard. To have them everywhere, also load the plugin as a frontend module in
+`configuration.yaml` and restart Home Assistant:
+
+```yaml
+frontend:
+  extra_module_url:
+    - /hacsfiles/CellKeeper-Dashboard/cellkeeper-dashboard.js
+```
+
+The icon paths in `src/icons.js` are generated from the logo outline in
+[CellKeeper-BMS-PCB](https://github.com/clowrey/CellKeeper-BMS-PCB)
+(`enclosure/cellkeeper_logo.json`) by `python tools/make_icons.py`.
+
 ## Options
 
 | Option | Default | |

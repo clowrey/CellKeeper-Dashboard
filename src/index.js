@@ -1,3 +1,4 @@
+import "./iconset.js";
 import "./cards/styled-card.js";
 import "./cards/state-tile.js";
 import "./cards/event-grid.js";
