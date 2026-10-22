@@ -18,6 +18,15 @@ const RAILS = [
   { key: "supply_voltage_contactor", name: "Contactor supply", min: 12, max: 16, hardMin: 10, event: "ctr_supply" },
 ];
 
+// BMS board temperatures from the HMI (registers 70, 57, 58), with amber/red above these.
+const BOARD_TEMPS = [
+  { key: "bms_chip_temperature", name: "Controller chip", warn: 70, bad: 85, hint: "the chip's own sensor, a few °C accurate" },
+  { key: "shunt_die_temperature", name: "Shunt chip", warn: 85, bad: 105, hint: "current sensor die" },
+  { key: "shunt_ntc_temperature", name: "Shunt", warn: 70, bad: 90, hint: "NTC on the current shunt" },
+];
+// An open (unfitted) NTC reads far below anything real.
+const NO_SENSOR_C = -40;
+
 const STALE_S = 30; // a BMS reading older than this means the HMI has lost the BMS
 
 function ageText(s) {
@@ -56,7 +65,8 @@ class CellKeeperSystemCard extends PackCard {
   watched() {
     return {
       link: ["millis", "uptime_pico", "uptime_hmi", "system_state_text", "wifi_rssi"],
-      bms: ["serial", "board_revision", "board_strap_counts", "uptime_pico", "system_state_text", "bms_firmware", ...RAILS.map((r) => r.key)],
+      bms: ["serial", "board_revision", "board_strap_counts", "uptime_pico", "system_state_text", "bms_firmware",
+        ...RAILS.map((r) => r.key), ...BOARD_TEMPS.map((t) => t.key)],
       hmi: ["uptime_hmi", "hmi_firmware", "internal_temperature", "heap_free", "heap_max_block", "loop_time", "wifi_ssid", "wifi_ip", "wifi_rssi", "bssid", "light:display_backlight", "button:hmi_restart"],
     }[this._config.kind];
   }
@@ -192,8 +202,24 @@ class CellKeeperSystemCard extends PackCard {
               ${rails.map((r) => this._rail(r))}
               <div class="note">Bars show the range the firmware accepts; outside it a supply event is raised.</div>`
           : ""}
+        ${this._boardTemps()}
       </div>
     `;
+  }
+
+  // Controller chip and current shunt temperatures, where the HMI reports them.
+  _boardTemps() {
+    const temps = BOARD_TEMPS.map((t) => ({ ...t, v: this.num(t.key) })).filter((t) => t.v !== undefined);
+    if (!temps.length) return "";
+    return html`<div class="label sect">Board temperatures</div>
+      <div class="health">
+        ${temps.map((t) =>
+          t.v < NO_SENSOR_C
+            ? this._meter(t.key, t.name, t.v, "–", undefined, "muted", `no sensor connected (reads ${fmt(this.hass, t.v, 0)} °C)`)
+            : this._meter(t.key, t.name, t.v, `${fmt(this.hass, t.v, 1)} °C`, Math.max(0, Math.min(1, t.v / 100)),
+                t.v > t.bad ? "bad" : t.v > t.warn ? "warn" : "good", t.hint)
+        )}
+      </div>`;
   }
 
   _rail(r) {

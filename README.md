@@ -89,8 +89,9 @@ rebuilds `src/events/catalog.js` from that table and the HMI's `bms_core.yaml`.
 - **Link**: BMS → HMI → Home Assistant, with how fresh the BMS's data is and the Wi-Fi signal, so
   a dead link shows where it broke.
 - **BMS controller**: firmware build (commit and build time, flagged when built from uncommitted
-  changes), board revision, serial and uptime, and each supply rail (3.3 V, 5 V, 12 V,
-  contactor supply) on a bar against the range the firmware accepts.
+  changes), board revision, serial and uptime, each supply rail (3.3 V, 5 V, 12 V,
+  contactor supply) on a bar against the range the firmware accepts, and the controller chip and
+  current shunt temperatures.
 - **HMI display**: model, firmware build, Wi-Fi network and signal quality, CPU temperature, free
   memory and loop time, the backlight, and buttons to open its web page or Home Assistant device
   page and to restart it (tap twice).
