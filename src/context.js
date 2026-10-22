@@ -51,6 +51,24 @@ export class PackContext {
   }
 }
 
+// A temperature in °C from a value in one of Home Assistant's temperature units. HA hands
+// temperatures over in the user's unit system (or a per-entity override): °C, °F or K. No unit
+// is taken as °C; any other unit gives undefined rather than a wrong number.
+export function toCelsius(value, unit) {
+  if (value === undefined || !Number.isFinite(value)) return undefined;
+  switch ((unit ?? "").trim()) {
+    case "":
+    case "°C":
+      return value;
+    case "°F":
+      return ((value - 32) * 5) / 9;
+    case "K":
+      return value - 273.15;
+    default:
+      return undefined;
+  }
+}
+
 // CellKeeper prefixes found in HA: every <prefix> with a sensor.<prefix>_system_state_text.
 export function findPrefixes(hass) {
   const prefixes = new Set();

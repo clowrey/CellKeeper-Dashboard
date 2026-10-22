@@ -7,6 +7,7 @@ globalThis.HTMLElement = class {};
 globalThis.customElements = { define() {}, get() {} };
 
 const { generateDashboard } = await import("../src/strategy.js");
+const { toCelsius } = await import("../src/context.js");
 
 const fixture = JSON.parse(readFileSync(new URL("./fixtures/ck0.json", import.meta.url), "utf8"));
 const prefix = process.argv.find((a, i) => i > 1 && !a.startsWith("--")) ?? "ck0";
@@ -96,6 +97,14 @@ check("no audio amplifier on the dashboard", !JSON.stringify(config).includes("a
 check(
   "classic configuration: no audio amplifier",
   !JSON.stringify(await generateDashboard({ prefix, configuration: "classic" }, hass)).includes("audio_amplifier")
+);
+
+const near = (a, b) => a !== undefined && Math.abs(a - b) < 0.01;
+check(
+  "temperatures: °C, °F, K and no unit convert; unknown units don't",
+  near(toCelsius(33.2, "°C"), 33.2) && near(toCelsius(91.8, "°F"), 33.22) && near(toCelsius(306.35, "K"), 33.2) &&
+    near(toCelsius(33.2, ""), 33.2) && near(toCelsius(33.2, undefined), 33.2) && toCelsius(33.2, "%") === undefined &&
+    toCelsius(undefined, "°F") === undefined
 );
 
 const none = await generateDashboard({ prefix: "nope" }, hass);

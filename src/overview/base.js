@@ -1,4 +1,5 @@
 import { LitElement, css } from "lit";
+import { toCelsius } from "../context.js";
 
 // Base for the Overview cards: pack prefix, entity helpers, and re-rendering only when an entity
 // the card shows has changed (hass changes many times a second across the whole house).
@@ -45,9 +46,7 @@ export class PackCard extends LitElement {
   // Temperatures arrive in the user's unit system (HA converts them), so show them in their
   // own unit, and judge them in °C, which is what the limits are written in.
   tempC(key) {
-    const v = this.num(key);
-    if (v === undefined) return undefined;
-    return /F$/.test(this.unit(key)) ? ((v - 32) * 5) / 9 : v;
+    return toCelsius(this.num(key), this.unit(key));
   }
 
   tempUnit(key) {
