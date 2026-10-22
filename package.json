@@ -1,6 +1,6 @@
 {
   "name": "cellkeeper-dashboard",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Home Assistant dashboard strategy for CellKeeper BMS packs",
   "private": true,
   "type": "module",

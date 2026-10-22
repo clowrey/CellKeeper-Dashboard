@@ -11,7 +11,7 @@ import { noteView } from "./views/note.js";
 export const VIEWS = {
   overview: (ctx, options) => overviewView(ctx, options),
   cells_3d: (ctx, _o, plotly) => (ctx.cellIds("cell_voltage").length ? cells3dView(ctx, plotly) : null),
-  cells_2d: (ctx, _o, plotly) => (ctx.cellIds("cell_voltage").length ? cells2dView(ctx, plotly) : null),
+  cells_2d: (ctx) => (ctx.cellIds("cell_voltage").length ? cells2dView(ctx) : null),
   configuration: (ctx, options) => configurationView(ctx, options),
   system: (ctx, options) => systemView(ctx, options),
   log: (ctx) => logView(ctx),

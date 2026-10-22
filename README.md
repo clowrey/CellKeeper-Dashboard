@@ -14,9 +14,15 @@ strategy:
 
 ![Overview of a 96s NMC pack discharging: battery gauge at 99.7 %, power flow against the charge and discharge limits, 24 h chart, cell voltages with balancing, temperature, energy, isolation and inverter cards](https://raw.githubusercontent.com/clowrey/CellKeeper-Dashboard/main/docs/overview-ck0.webp)
 
-Views: **Overview** (below), **Cells 3D** /
-**Cells 2D** (24 h cell voltage history), **Configuration** (all BMS settings), **System**, **Log**,
-**Event** (every event type, coloured by state) and **Note**.
+Views: **Overview** (below), **Cells 3D** / **Cells 2D** (cell voltage history), **Configuration**
+(all BMS settings), **System**, **Log**, **Event** (every event type, coloured by state) and **Note**.
+
+**Cells 2D** is a heatmap of every cell over 6 h, 24 h, 7 d or 30 d, either as voltage or as each
+cell's difference from the pack average at the time, with the spread between the highest and lowest
+cell underneath, balancing cells marked on request, and a readout of the cell and time under the
+pointer. **Cells 3D** shows the same data as a surface you can turn. Both read Home Assistant's
+5-minute and hourly statistics for all cells in one request instead of every cell's raw history, so
+24 h opens in about a second (Cells 3D takes a few more to draw).
 
 ### The Overview
 
@@ -119,7 +125,7 @@ If your device already has another name, either use that name as the prefix or r
    type **Dashboard**.
 2. Search HACS for **CellKeeper Dashboard** and **Download** it. HACS adds the dashboard resource
    for you; reload the browser when it asks.
-3. Also download **Plotly Graph Card** from HACS, which the Cells views need (see
+3. Also download **Plotly Graph Card** from HACS, which the Cells 3D view needs (see
    [Dependencies](#dependencies)).
 
 HACS will offer updates when a new release is published.
@@ -221,8 +227,8 @@ strategy:
 
 - **Home Assistant 2025.1** or newer (sections views, tile card features).
 - **[Plotly Graph Card](https://github.com/dbuezas/lovelace-plotly-graph-card)** (HACS) for the
-  Cells, Cells 3D and Cells 2D views. Without it those charts show a note asking you to install it;
-  the rest of the dashboard works.
+  Cells 3D view. Without it that view shows a note asking you to install it; the rest of the
+  dashboard works.
 
 Nothing else. The colour-by-state tiles, event lists and styling that used to need card-mod,
 auto-entities, mushroom and decluttering-card are built into this plugin.
@@ -234,6 +240,9 @@ dashboards:
 
 - `custom:cellkeeper-pack-card`, `custom:cellkeeper-cells-card`: the Overview's pack and cell
   cards. Option: `prefix`.
+- `custom:cellkeeper-cell-history-card`, `custom:cellkeeper-cells-3d-card`: the Cells 2D and 3D
+  views. Options: `prefix`, `range` (`6h`, `24h`, `7d`, `30d`); for the heatmap also `mode`
+  (`voltage`, `deviation`) and `balancing` (mark balancing cells); for 3D also `height`.
 - `custom:cellkeeper-stat-card`: the Overview's small cards. Options: `prefix`, `kind`
   (`temperature`, `energy`, `isolation`, `inverter`), `navigate` (a view path for its header).
 - `custom:cellkeeper-settings-card`, `custom:cellkeeper-lock-card`: the Configuration view's cards

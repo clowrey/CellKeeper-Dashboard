@@ -1,6 +1,7 @@
 import { html, svg, css, nothing } from "lit";
 import { PackCard, baseStyles, fmt } from "./base.js";
 import { define, MAX_CELLS } from "../context.js";
+import { cellSet } from "../cells/history.js";
 
 // custom:cellkeeper-cells-card
 //   prefix: ck0
@@ -12,18 +13,6 @@ import { define, MAX_CELLS } from "../context.js";
 
 const BALANCE = "#FDD835";
 const BALANCE_ACTIVE = "#FF9800";
-
-// "1-4,7" -> Set{1,2,3,4,7}
-function cellSet(raw) {
-  const out = new Set();
-  if (!raw || ["None", "unknown", "unavailable"].includes(raw)) return out;
-  for (const t of raw.split(",").map((s) => s.trim())) {
-    const r = t.match(/^(\d+)\s*-\s*(\d+)$/);
-    if (r) for (let c = Math.min(+r[1], +r[2]); c <= Math.max(+r[1], +r[2]); c++) out.add(c);
-    else if (/^\d+$/.test(t)) out.add(+t);
-  }
-  return out;
-}
 
 class CellKeeperCellsCard extends PackCard {
   static properties = { ...PackCard.properties, _hover: { state: true } };

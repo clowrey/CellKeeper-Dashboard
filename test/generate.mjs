@@ -54,6 +54,14 @@ check(
   JSON.stringify(config.views.map((v) => v.title)) ===
     JSON.stringify(["Overview", "Cells 3D", "Cells 2D", "Configuration", "System", "Log", "Event", "Note"])
 );
+const noPlotly = await generateDashboard({ prefix }, hass, { hasPlotly: false });
+const view = (cfg, title) => JSON.stringify(cfg.views.find((v) => v.title === title));
+check(
+  "Cells 2D is drawn without Plotly, Cells 3D asks for it",
+  view(noPlotly, "Cells 2D").includes("custom:cellkeeper-cell-history-card") &&
+    !view(noPlotly, "Cells 3D").includes("cellkeeper-cells-3d-card") &&
+    view(config, "Cells 3D").includes("custom:cellkeeper-cells-3d-card")
+);
 check("every entity id uses the prefix", [...referencedEntities(config)].every((id) => id.split(".")[1].startsWith(`${prefix}_`)));
 
 // Older firmware: no balance charge, no isolation, no module ID events.
