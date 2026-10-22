@@ -42,6 +42,18 @@ export class PackCard extends LitElement {
     return this.stateObj(key)?.attributes.unit_of_measurement ?? "";
   }
 
+  // Temperatures arrive in the user's unit system (HA converts them), so show them in their
+  // own unit, and judge them in °C, which is what the limits are written in.
+  tempC(key) {
+    const v = this.num(key);
+    if (v === undefined) return undefined;
+    return /F$/.test(this.unit(key)) ? ((v - 32) * 5) / 9 : v;
+  }
+
+  tempUnit(key) {
+    return this.unit(key) || "°C";
+  }
+
   // Entities this card renders; it only re-renders when one of them changes.
   watched() {
     return [];

@@ -93,21 +93,22 @@ class CellKeeperStatCard extends PackCard {
   _temperature() {
     const lo = this.num("module_temperature_min");
     const hi = this.num("module_temperature_max");
-    const mods = this._moduleKeys().map((k) => ({ k, t: this.num(k), n: k.match(/\d+$/)[0] }));
+    const unit = this.tempUnit("module_temperature_max");
+    const mods = this._moduleKeys().map((k) => ({ k, t: this.num(k), c: this.tempC(k), n: k.match(/\d+$/)[0] }));
     const ts = mods.map((m) => m.t).filter((t) => t !== undefined);
     const floor = Math.min(...ts, lo ?? Infinity) - 3;
     const ceil = Math.max(...ts, hi ?? -Infinity) + 1;
     return html`
       <div class="headline clickable" @click=${() => this.moreInfo("module_temperature_max")}>
-        <span class="big num" style="color:${tempColor(hi)}">${fmt(this.hass, lo, 1)}–${fmt(this.hass, hi, 1)}<span class="unit">°C</span></span>
+        <span class="big num" style="color:${tempColor(this.tempC("module_temperature_max"))}">${fmt(this.hass, lo, 1)}–${fmt(this.hass, hi, 1)}<span class="unit">${unit}</span></span>
       </div>
-      <div class="sub">Coolest to warmest module · spread ${fmt(this.hass, hi - lo, 1)} °C</div>
+      <div class="sub">Coolest to warmest module · spread ${fmt(this.hass, hi - lo, 1)} ${unit}</div>
       ${mods.length
         ? html`<div class="cols">
             ${mods.map(
-              (m) => html`<div class="col clickable" title="Module ${m.n}: ${fmt(this.hass, m.t, 1)} °C" @click=${() => this.moreInfo(m.k)}>
+              (m) => html`<div class="col clickable" title="Module ${m.n}: ${fmt(this.hass, m.t, 1)} ${unit}" @click=${() => this.moreInfo(m.k)}>
                 <div class="v num">${fmt(this.hass, m.t, 0)}°</div>
-                <div class="track"><div class="fill" style="height:${m.t === undefined ? 0 : ((m.t - floor) / (ceil - floor)) * 100}%;background:${tempColor(m.t)}"></div></div>
+                <div class="track"><div class="fill" style="height:${m.t === undefined ? 0 : ((m.t - floor) / (ceil - floor)) * 100}%;background:${tempColor(m.c)}"></div></div>
                 <div class="n">${m.n}</div>
               </div>`
             )}

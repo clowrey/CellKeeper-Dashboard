@@ -209,15 +209,17 @@ class CellKeeperSystemCard extends PackCard {
 
   // Controller chip and current shunt temperatures, where the HMI reports them.
   _boardTemps() {
-    const temps = BOARD_TEMPS.map((t) => ({ ...t, v: this.num(t.key) })).filter((t) => t.v !== undefined);
+    const temps = BOARD_TEMPS.map((t) => ({ ...t, v: this.num(t.key), c: this.tempC(t.key), u: this.tempUnit(t.key) })).filter(
+      (t) => t.v !== undefined
+    );
     if (!temps.length) return "";
     return html`<div class="label sect">Board temperatures</div>
       <div class="health">
         ${temps.map((t) =>
-          t.v < NO_SENSOR_C
-            ? this._meter(t.key, t.name, t.v, "–", undefined, "muted", `no sensor connected (reads ${fmt(this.hass, t.v, 0)} °C)`)
-            : this._meter(t.key, t.name, t.v, `${fmt(this.hass, t.v, 1)} °C`, Math.max(0, Math.min(1, t.v / 100)),
-                t.v > t.bad ? "bad" : t.v > t.warn ? "warn" : "good", t.hint)
+          t.c < NO_SENSOR_C
+            ? this._meter(t.key, t.name, t.v, "–", undefined, "muted", `no sensor connected (reads ${fmt(this.hass, t.v, 0)} ${t.u})`)
+            : this._meter(t.key, t.name, t.v, `${fmt(this.hass, t.v, 1)} ${t.u}`, Math.max(0, Math.min(1, t.c / 100)),
+                t.c > t.bad ? "bad" : t.c > t.warn ? "warn" : "good", t.hint)
         )}
       </div>`;
   }
@@ -263,6 +265,7 @@ class CellKeeperSystemCard extends PackCard {
     const d = this.device;
     const up = this.num("uptime_hmi");
     const temp = this.num("internal_temperature");
+    const tempC = this.tempC("internal_temperature");
     const free = this.num("heap_free");
     const block = this.num("heap_max_block");
     const loop = this.num("loop_time");
@@ -308,7 +311,8 @@ class CellKeeperSystemCard extends PackCard {
 
         <div class="label sect">Health</div>
         <div class="health">
-          ${this._meter("internal_temperature", "CPU temperature", temp, `${fmt(this.hass, temp, 1)} °C`, temp === undefined ? 0 : temp / 100, temp > 80 ? "bad" : temp > 65 ? "warn" : "good")}
+          ${this._meter("internal_temperature", "P4 temperature", temp, `${fmt(this.hass, temp, 1)} ${this.tempUnit("internal_temperature")}`,
+            tempC === undefined ? 0 : tempC / 100, tempC > 80 ? "bad" : tempC > 65 ? "warn" : "good")}
           ${this._meter("heap_free", "Free memory", free, kb(free), undefined, free < 10240 ? "bad" : free < 20480 ? "warn" : "good",
             block !== undefined ? `largest block ${kb(block)}` : "")}
           ${this._meter("loop_time", "Loop time", loop, `${fmt(this.hass, loop, 0)} ms`, loop === undefined ? 0 : Math.min(1, loop / 100), loop > 80 ? "bad" : loop > 60 ? "warn" : "good", "time for one pass of the HMI's main loop")}
