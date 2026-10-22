@@ -1,6 +1,7 @@
 import { entitiesCard, entityCard, sections } from "../context.js";
 
-export function systemView(ctx) {
+// The original entities layout, kept as `system: classic`.
+export function classicSystemView(ctx) {
   const rows = (rows) => rows.map(([key, name]) => ({ entity: ctx.id("sensor", key), ...(name && { name }) }));
   return {
     title: "System",
@@ -65,5 +66,23 @@ export function systemView(ctx) {
         ],
       },
     ]),
+  };
+}
+
+export function systemView(ctx, options = {}) {
+  if (options.system === "classic") return classicSystemView(ctx);
+  const card = (kind) => ({ type: "custom:cellkeeper-system-card", prefix: ctx.prefix, kind });
+  const hasBms = ctx.has(ctx.id("sensor", "uptime_pico")) || ctx.has(ctx.id("sensor", "supply_voltage_12v"));
+  const hasHmi = ctx.has(ctx.id("sensor", "uptime_hmi"));
+  if (!hasBms && !hasHmi) return null;
+  return {
+    title: "System",
+    type: "sections",
+    max_columns: 2,
+    sections: [
+      { column_span: 2, cards: [card("link")] },
+      hasBms ? { cards: [card("bms")] } : null,
+      hasHmi ? { cards: [card("hmi")] } : null,
+    ].filter(Boolean),
   };
 }

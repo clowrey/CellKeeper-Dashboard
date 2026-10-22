@@ -88,6 +88,10 @@ check(
   "classic event view still lists the tiles",
   JSON.stringify(await generateDashboard({ prefix, events: "classic" }, hass)).includes("cellkeeper-state-tile")
 );
+check(
+  "system view: link, BMS and HMI cards",
+  ["link", "bms", "hmi"].every((k) => JSON.stringify(config.views.find((v) => v.path === "system")).includes(`"kind":"${k}"`))
+);
 check("no audio amplifier on the dashboard", !JSON.stringify(config).includes("audio_amplifier"));
 check(
   "classic configuration: no audio amplifier",

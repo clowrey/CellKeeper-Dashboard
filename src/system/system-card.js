@@ -1,0 +1,651 @@
+import { html, css, nothing } from "lit";
+import { PackCard, baseStyles, fmt, fmtDuration } from "../overview/base.js";
+import { define } from "../context.js";
+
+// custom:cellkeeper-system-card
+//   prefix: ck0
+//   kind: link | bms | hmi
+//
+// link: BMS -> HMI -> Home Assistant, and how fresh the data is at each hop.
+// bms:  the BMS board, its uptime, and its supply rails against the firmware's limits.
+// hmi:  the display: firmware, Wi-Fi, health, backlight, web page and restart.
+
+// Supply rails and their limits from the firmware (bms/config/limits.h), in volts.
+const RAILS = [
+  { key: "supply_voltage_3v3", name: "3.3 V logic", min: 3.2, max: 3.6, event: "3v3" },
+  { key: "supply_voltage_5v", name: "5 V", min: 4.4, max: 5.6, event: "5v" },
+  { key: "supply_voltage_12v", name: "12 V input", min: 11, max: 16, event: "12v" },
+  { key: "supply_voltage_contactor", name: "Contactor supply", min: 12, max: 16, hardMin: 10, event: "ctr_supply" },
+];
+
+const STALE_S = 30; // a BMS reading older than this means the HMI has lost the BMS
+
+function ageText(s) {
+  if (s === undefined) return "–";
+  if (s < 60) return `${Math.max(0, Math.round(s))} s ago`;
+  return `${fmtDuration(s / 3600)} ago`;
+}
+
+function rssiQuality(dbm) {
+  if (dbm === undefined) return { bars: 0, text: "", tone: "muted" };
+  if (dbm >= -60) return { bars: 4, text: "Excellent", tone: "good" };
+  if (dbm >= -70) return { bars: 3, text: "Good", tone: "good" };
+  if (dbm >= -80) return { bars: 2, text: "Fair", tone: "warn" };
+  return { bars: 1, text: "Weak", tone: "bad" };
+}
+
+class CellKeeperSystemCard extends PackCard {
+  static properties = { ...PackCard.properties, _armed: { state: true }, _tick: { state: true } };
+
+  setConfig(config) {
+    if (!["link", "bms", "hmi"].includes(config.kind)) throw new Error("cellkeeper-system-card: kind is link, bms or hmi");
+    super.setConfig(config);
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    // Ages tick on their own; re-render every few seconds.
+    if (this._config?.kind === "link") this._timer = setInterval(() => (this._tick = Date.now()), 5000);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    clearInterval(this._timer);
+  }
+
+  watched() {
+    return {
+      link: ["millis", "uptime_pico", "uptime_hmi", "system_state_text", "wifi_rssi"],
+      bms: ["serial", "board_revision", "board_strap_counts", "uptime_pico", "system_state_text", ...RAILS.map((r) => r.key)],
+      hmi: ["uptime_hmi", "internal_temperature", "heap_free", "heap_max_block", "loop_time", "wifi_ssid", "wifi_ip", "wifi_rssi", "bssid", "light:display_backlight", "button:hmi_restart"],
+    }[this._config.kind];
+  }
+
+  shouldUpdate(changed) {
+    return changed.has("_tick") || super.shouldUpdate(changed);
+  }
+
+  get device() {
+    const id = this.hass.entities?.[this.eid("soc")]?.device_id ?? this.hass.entities?.[this.eid("uptime_hmi")]?.device_id;
+    return id ? { id, ...this.hass.devices?.[id] } : undefined;
+  }
+
+  // Seconds since the entity last reported, or undefined if it isn't reporting.
+  _age(key) {
+    const st = this.stateObj(key);
+    if (!st || st.state === "unavailable" || st.state === "unknown") return undefined;
+    return (Date.now() - new Date(st.last_updated).getTime()) / 1000;
+  }
+
+  render() {
+    if (!this.hass || !this._config) return nothing;
+    const body = { link: () => this._link(), bms: () => this._bms(), hmi: () => this._hmi() }[this._config.kind]();
+    return body ? html`<ha-card>${body}</ha-card>` : nothing;
+  }
+
+  // ---- link ----
+
+  _link() {
+    const hmiOnline = this.str("uptime_hmi") !== undefined;
+    const bmsAge = this._age("millis") ?? this._age("uptime_pico");
+    const bmsOk = hmiOnline && bmsAge !== undefined && bmsAge < STALE_S;
+    const rssi = this.num("wifi_rssi");
+    const q = rssiQuality(rssi);
+    const node = (icon, name, sub, tone, click) => html`
+      <div class="node ${tone} ${click ? "clickable" : ""}" @click=${click ?? (() => {})}>
+        <div class="nicon"><ha-icon icon=${icon}></ha-icon></div>
+        <div class="ntext"><div class="nname">${name}</div><div class="nsub">${sub}</div></div>
+      </div>`;
+    const wire = (ok, label) => html`<div class="wire ${ok ? "ok" : "down"}"><span>${label}</span></div>`;
+    const state = this.str("system_state_text");
+    return html`
+      <div class="chain">
+        ${node(
+          "cellkeeper:battery",
+          "BMS",
+          bmsOk ? state ? state[0] + state.slice(1).toLowerCase() : "Reporting" : hmiOnline ? "Not reporting" : "Unknown",
+          bmsOk ? "good" : hmiOnline ? "bad" : "muted",
+          () => this.moreInfo("system_state_text")
+        )}
+        ${wire(
+          bmsOk,
+          bmsOk
+            ? `serial · ${ageText(bmsAge)}`
+            : !hmiOnline
+            ? "unknown"
+            : bmsAge !== undefined
+            ? `no data for ${ageText(bmsAge).replace(" ago", "")}`
+            : "no data"
+        )}
+        ${node("mdi:monitor-dashboard", "HMI", hmiOnline ? `Up ${fmtDuration(this.num("uptime_hmi") / 3600)}` : "Offline", hmiOnline ? "good" : "bad", () => this.moreInfo("uptime_hmi"))}
+        ${wire(hmiOnline, hmiOnline ? `Wi-Fi${rssi !== undefined ? ` · ${q.text.toLowerCase()} ${fmt(this.hass, rssi, 0)} dBm` : ""}` : "offline")}
+        ${node("mdi:home-assistant", "Home Assistant", "This page", "good")}
+      </div>
+    `;
+  }
+
+  // ---- BMS ----
+
+  _bms() {
+    const serial = this.str("serial");
+    const rev = this.str("board_revision");
+    const up = this.num("uptime_pico");
+    const started = up !== undefined ? new Date(Date.now() - up * 1000) : undefined;
+    const rails = RAILS.filter((r) => this.has(r.key));
+    return html`
+      <div class="wrap">
+        <div class="dhead">
+          <ha-icon icon="cellkeeper:battery"></ha-icon>
+          <div>
+            <div class="dname">BMS controller</div>
+            <div class="dsub">${["CellKeeper", rev && `board ${rev}`].filter(Boolean).join(" · ")}</div>
+          </div>
+        </div>
+        <div class="facts">
+          ${up !== undefined
+            ? html`<div class="clickable" @click=${() => this.moreInfo("uptime_pico")}>
+                <span>Up</span><b>${fmtDuration(up / 3600) || "under a minute"}</b>
+                <i class="dim">since ${started.toLocaleString(this.hass.locale?.language, { weekday: "short", hour: "2-digit", minute: "2-digit" })}</i>
+              </div>`
+            : ""}
+          ${serial ? html`<div class="clickable" @click=${() => this.moreInfo("serial")}><span>Serial</span><b class="num mono">${serial}</b></div>` : ""}
+          ${rev
+            ? html`<div class="clickable" @click=${() => this.moreInfo("board_strap_counts")}>
+                <span>Board</span><b>${rev}</b>${this.has("board_strap_counts") ? html`<i class="dim">strap reading ${fmt(this.hass, this.num("board_strap_counts"), 1)}</i>` : ""}
+              </div>`
+            : ""}
+        </div>
+        ${rails.length
+          ? html`<div class="label sect">Supply rails</div>
+              ${rails.map((r) => this._rail(r))}
+              <div class="note">Bars show the range the firmware accepts; outside it a supply event is raised.</div>`
+          : ""}
+      </div>
+    `;
+  }
+
+  _rail(r) {
+    const v = this.num(r.key);
+    const lo = (r.hardMin ?? r.min) - (r.max - r.min) * 0.25;
+    const hi = r.max + (r.max - r.min) * 0.25;
+    const pct = (x) => ((Math.max(lo, Math.min(hi, x)) - lo) / (hi - lo)) * 100;
+    const tone = v === undefined ? "muted" : v < (r.hardMin ?? r.min) || v > r.max ? "bad" : v < r.min ? "warn" : "good";
+    const eventIds = Object.keys(this.hass.states).filter((id) =>
+      id.startsWith(`sensor.${this.prefix}_event_`) && id.includes(`_${r.event}_`)
+    );
+    const active = eventIds.find((id) => /^(INFO|WARNING|CRITICAL|FATAL) /.test(this.hass.states[id].state));
+    return html`
+      <div class="rail clickable" @click=${() => this.moreInfo(r.key)}>
+        <span class="rname">${r.name}</span>
+        <div class="rbar">
+          ${r.hardMin !== undefined ? html`<i class="zone warn" style="left:${pct(r.hardMin)}%;width:${pct(r.min) - pct(r.hardMin)}%"></i>` : ""}
+          <i class="zone good" style="left:${pct(r.min)}%;width:${pct(r.max) - pct(r.min)}%"></i>
+          ${v !== undefined ? html`<i class="pin ${tone}" style="left:${pct(v)}%"></i>` : ""}
+        </div>
+        <span class="rv num ${tone}">${fmt(this.hass, v, r.max < 6 ? 3 : 2)} V</span>
+        ${active ? html`<span class="ralert">${this.hass.states[active].state}</span>` : ""}
+      </div>
+    `;
+  }
+
+  // ---- HMI ----
+
+  _press() {
+    if (this._armed) {
+      this._armed = false;
+      this.hass.callService("button", "press", { entity_id: this.eid("button:hmi_restart") });
+      return;
+    }
+    this._armed = true;
+    clearTimeout(this._armTimer);
+    this._armTimer = setTimeout(() => (this._armed = false), 4000);
+  }
+
+  _hmi() {
+    const d = this.device;
+    const up = this.num("uptime_hmi");
+    const temp = this.num("internal_temperature");
+    const free = this.num("heap_free");
+    const block = this.num("heap_max_block");
+    const loop = this.num("loop_time");
+    const rssi = this.num("wifi_rssi");
+    const q = rssiQuality(rssi);
+    const ip = this.str("wifi_ip");
+    const url = d?.configuration_url ?? (ip ? `http://${ip}` : undefined);
+    const light = this.stateObj("light:display_backlight");
+    const brightness = light?.state === "on" ? Math.round(((light.attributes.brightness ?? 255) / 255) * 100) : 0;
+    const sw = d?.sw_version?.match(/^(.*?) \((ESPHome [^)]+)\)$/);
+    const kb = (b) => (b === undefined ? "–" : `${fmt(this.hass, b / 1024, 1)} KB`);
+    return html`
+      <div class="wrap">
+        <div class="dhead">
+          <ha-icon icon="mdi:monitor-dashboard"></ha-icon>
+          <div>
+            <div class="dname">HMI display${d?.name_by_user || d?.name ? html` <span class="dim">${d.name_by_user || d.name}</span>` : ""}</div>
+            <div class="dsub">${[d?.model, sw ? `CellKeeper ${sw[1]}` : d?.sw_version, sw?.[2]].filter(Boolean).join(" · ")}</div>
+          </div>
+        </div>
+        <div class="actions">
+          ${url ? html`<a class="act" href=${url} target="_blank" rel="noreferrer"><ha-icon icon="mdi:open-in-new"></ha-icon>Web page</a>` : ""}
+          ${d?.id ? html`<a class="act" href="/config/devices/device/${d.id}"><ha-icon icon="mdi:devices"></ha-icon>Device</a>` : ""}
+          ${this.has("button:hmi_restart")
+            ? html`<button class="act ${this._armed ? "armed" : ""}" @click=${() => this._press()}>
+                <ha-icon icon="mdi:restart"></ha-icon>${this._armed ? "Tap again to restart" : "Restart"}
+              </button>`
+            : ""}
+        </div>
+        <div class="facts">
+          ${up !== undefined ? html`<div class="clickable" @click=${() => this.moreInfo("uptime_hmi")}><span>Up</span><b>${fmtDuration(up / 3600) || "under a minute"}</b></div>` : ""}
+        </div>
+
+        <div class="label sect">Wi-Fi</div>
+        <div class="wifi clickable" @click=${() => this.moreInfo("wifi_rssi")}>
+          <span class="bars ${q.tone}">${[1, 2, 3, 4].map((b) => html`<i class=${b <= q.bars ? "on" : ""} style="height:${b * 25}%"></i>`)}</span>
+          <div>
+            <div><b>${this.str("wifi_ssid") ?? "–"}</b> <span class="${q.tone}">${q.text}</span> <span class="dim num">${fmt(this.hass, rssi, 0)} dBm</span></div>
+            <div class="dim small num">${[ip, this.str("bssid") && `AP ${this.str("bssid")}`].filter(Boolean).join(" · ")}</div>
+          </div>
+        </div>
+
+        <div class="label sect">Health</div>
+        <div class="health">
+          ${this._meter("internal_temperature", "CPU temperature", temp, `${fmt(this.hass, temp, 1)} °C`, temp === undefined ? 0 : temp / 100, temp > 80 ? "bad" : temp > 65 ? "warn" : "good")}
+          ${this._meter("heap_free", "Free memory", free, kb(free), undefined, free < 10240 ? "bad" : free < 20480 ? "warn" : "good",
+            block !== undefined ? `largest block ${kb(block)}` : "")}
+          ${this._meter("loop_time", "Loop time", loop, `${fmt(this.hass, loop, 0)} ms`, loop === undefined ? 0 : Math.min(1, loop / 100), loop > 80 ? "bad" : loop > 60 ? "warn" : "good", "time for one pass of the HMI's main loop")}
+        </div>
+
+        ${light
+          ? html`<div class="label sect">Display</div>
+              <div class="bl">
+                <button class="toggle ${light.state === "on" ? "on" : ""}" @click=${() =>
+                  this.hass.callService("light", light.state === "on" ? "turn_off" : "turn_on", { entity_id: light.entity_id })}>
+                  <i></i>
+                </button>
+                <ha-icon icon=${light.state === "on" ? "mdi:brightness-6" : "mdi:brightness-4"}></ha-icon>
+                <input type="range" min="1" max="100" .value=${String(brightness || 1)} ?disabled=${light.state !== "on"}
+                  @change=${(e) => this.hass.callService("light", "turn_on", { entity_id: light.entity_id, brightness_pct: +e.target.value })} />
+                <span class="num blv">${light.state === "on" ? `${brightness} %` : "Off"}</span>
+              </div>`
+          : ""}
+      </div>
+    `;
+  }
+
+  _meter(key, name, value, text, frac, tone, hint) {
+    if (value === undefined && !this.has(key)) return "";
+    return html`<div class="meter clickable" @click=${() => this.moreInfo(key)}>
+      <div class="mtop"><span>${name}</span><b class="num ${tone}">${text}</b></div>
+      ${frac !== undefined ? html`<div class="mbar"><i class=${tone} style="width:${Math.max(2, frac * 100)}%"></i></div>` : ""}
+      ${hint ? html`<div class="dim small">${hint}</div>` : ""}
+    </div>`;
+  }
+
+  getGridOptions() {
+    return { columns: "full", rows: "auto" };
+  }
+
+  static styles = [
+    baseStyles,
+    css`
+      .wrap {
+        padding: 16px 18px 14px;
+      }
+      .dim {
+        color: var(--ck-muted);
+      }
+      .small {
+        font-size: 12px;
+      }
+      .mono {
+        font-family: var(--code-font-family, monospace);
+        font-size: 12px;
+      }
+      .good {
+        color: var(--ck-good);
+      }
+      .warn {
+        color: var(--ck-warn);
+      }
+      .bad {
+        color: var(--ck-bad);
+      }
+      .sect {
+        margin: 16px 0 6px;
+      }
+      .note {
+        margin-top: 6px;
+        font-size: 12px;
+        color: var(--ck-muted);
+      }
+
+      /* link chain */
+      .chain {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px 0;
+        padding: 14px 18px;
+      }
+      .node {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 10px 6px 6px;
+        border-radius: 12px;
+      }
+      .nicon {
+        display: grid;
+        place-items: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: color-mix(in srgb, var(--c, var(--ck-muted)) 16%, transparent);
+        color: var(--c, var(--ck-muted));
+      }
+      .node.good {
+        --c: var(--ck-good);
+      }
+      .node.bad {
+        --c: var(--ck-bad);
+      }
+      .nname {
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .nsub {
+        font-size: 12px;
+        color: var(--c, var(--ck-muted));
+      }
+      .wire {
+        flex: 1 1 60px;
+        min-width: 60px;
+        position: relative;
+        height: 30px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+      }
+      .wire::before {
+        content: "";
+        position: absolute;
+        left: 4px;
+        right: 4px;
+        top: 50%;
+        border-top: 2px solid var(--ck-good);
+      }
+      .wire.down::before {
+        border-top: 2px dashed var(--ck-bad);
+      }
+      .wire span {
+        position: relative;
+        top: 2px;
+        font-size: 11px;
+        color: var(--ck-muted);
+        white-space: nowrap;
+      }
+      ha-card {
+        container-type: inline-size;
+      }
+      /* Narrow cards: the chain runs down the card instead of across it. */
+      @container (max-width: 560px) {
+        .chain {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 0;
+        }
+        .wire {
+          flex: none;
+          height: 28px;
+          align-items: center;
+          justify-content: flex-start;
+          padding-left: 58px;
+        }
+        .wire::before {
+          left: 24px;
+          right: auto;
+          top: 0;
+          bottom: 0;
+          border-top: 0;
+          border-left: 2px solid var(--ck-good);
+        }
+        .wire.down::before {
+          border-top: 0;
+          border-left: 2px dashed var(--ck-bad);
+        }
+        .wire span {
+          top: 0;
+        }
+      }
+
+      /* device cards */
+      .dhead {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .dhead > ha-icon {
+        --mdc-icon-size: 28px;
+        color: var(--state-icon-color, var(--primary-color));
+      }
+      .dname {
+        font-size: 17px;
+        font-weight: 500;
+      }
+      .dname .dim {
+        font-weight: 400;
+        font-size: 14px;
+      }
+      .dsub {
+        font-size: 13px;
+        color: var(--ck-muted);
+      }
+      .facts {
+        margin: 12px -6px 0;
+        font-size: 14px;
+      }
+      .facts > div {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        padding: 4px 6px;
+      }
+      .facts span {
+        width: 4.5em;
+        flex: none;
+        color: var(--ck-muted);
+      }
+      .facts b {
+        font-weight: 500;
+      }
+      .facts i {
+        font-style: normal;
+        font-size: 12px;
+      }
+      .rail {
+        display: grid;
+        grid-template-columns: 8.5em 1fr 5em;
+        align-items: center;
+        gap: 10px;
+        margin: 0 -6px;
+        padding: 5px 6px;
+        font-size: 13px;
+      }
+      .rbar {
+        position: relative;
+        height: 8px;
+        border-radius: 4px;
+        background: color-mix(in srgb, var(--ck-bad) 25%, transparent);
+      }
+      .zone {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+      }
+      .zone.good {
+        background: color-mix(in srgb, var(--ck-good) 50%, transparent);
+      }
+      .zone.warn {
+        background: color-mix(in srgb, var(--ck-warn) 45%, transparent);
+      }
+      .pin {
+        position: absolute;
+        top: -4px;
+        bottom: -4px;
+        width: 4px;
+        margin-left: -2px;
+        border-radius: 2px;
+        background: var(--primary-text-color);
+        box-shadow: 0 0 0 2px var(--card-background-color, #fff);
+      }
+      .rv {
+        text-align: right;
+        font-size: 14px;
+      }
+      .ralert {
+        grid-column: 1 / -1;
+        font-size: 12px;
+        color: var(--ck-warn);
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 12px;
+      }
+      .act {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px 6px 10px;
+        border-radius: 16px;
+        border: 1px solid var(--ck-line);
+        background: transparent;
+        font: inherit;
+        font-size: 13px;
+        color: var(--primary-color);
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .act ha-icon {
+        --mdc-icon-size: 16px;
+      }
+      .act.armed {
+        color: var(--card-background-color, #fff);
+        background: var(--ck-warn);
+        border-color: var(--ck-warn);
+      }
+      .wifi {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0 -6px;
+        padding: 4px 6px;
+        font-size: 14px;
+      }
+      .bars {
+        display: flex;
+        align-items: flex-end;
+        gap: 2px;
+        height: 20px;
+        flex: none;
+      }
+      .bars i {
+        width: 5px;
+        border-radius: 1px;
+        background: var(--ck-track);
+      }
+      .bars.good i.on {
+        background: var(--ck-good);
+      }
+      .bars.warn i.on {
+        background: var(--ck-warn);
+      }
+      .bars.bad i.on {
+        background: var(--ck-bad);
+      }
+      .health {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 4px 16px;
+      }
+      .meter {
+        margin: 0 -6px;
+        padding: 4px 6px;
+      }
+      .mtop {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+      }
+      .mtop span {
+        color: var(--ck-muted);
+      }
+      .mtop b {
+        font-weight: 500;
+      }
+      .mbar {
+        height: 6px;
+        margin: 5px 0 3px;
+        border-radius: 3px;
+        background: var(--ck-track);
+        overflow: hidden;
+      }
+      .mbar i {
+        display: block;
+        height: 100%;
+        border-radius: 3px;
+        background: currentColor;
+      }
+      .bl {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .bl ha-icon {
+        color: var(--ck-muted);
+      }
+      .bl input {
+        flex: 1;
+        accent-color: var(--primary-color);
+      }
+      .blv {
+        width: 3.5em;
+        text-align: right;
+        font-size: 13px;
+      }
+      .toggle {
+        position: relative;
+        flex: none;
+        width: 40px;
+        height: 22px;
+        border-radius: 11px;
+        border: 0;
+        padding: 0;
+        background: var(--ck-track);
+        cursor: pointer;
+      }
+      .toggle i {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--primary-text-color);
+        opacity: 0.7;
+        transition: left 0.2s;
+      }
+      .toggle.on {
+        background: color-mix(in srgb, var(--primary-color) 55%, transparent);
+      }
+      .toggle.on i {
+        left: 21px;
+        background: var(--primary-color);
+        opacity: 1;
+      }
+    `,
+  ];
+}
+
+define("cellkeeper-system-card", CellKeeperSystemCard);

@@ -84,6 +84,16 @@ in bmstest1), not from the sensor names, some of which carry an older label: "Ev
 Stuck Open" is a warning that turns fatal after 20 occurrences. `python tools/make_events.py`
 rebuilds `src/events/catalog.js` from that table and the HMI's `bms_core.yaml`.
 
+### The System view
+
+- **Link**: BMS → HMI → Home Assistant, with how fresh the BMS's data is and the Wi-Fi signal, so
+  a dead link shows where it broke.
+- **BMS controller**: board revision, serial and uptime, and each supply rail (3.3 V, 5 V, 12 V,
+  contactor supply) on a bar against the range the firmware accepts.
+- **HMI display**: model and firmware, Wi-Fi network and signal quality, CPU temperature, free
+  memory and loop time, the backlight, and buttons to open its web page or Home Assistant device
+  page and to restart it (tap twice).
+
 ## Naming your packs
 
 CellKeeper entity ids start with the name of the pack's HMI device. Name your first (often only)
@@ -167,6 +177,7 @@ The icon paths in `src/icons.js` are generated from the logo outline in
 | `overview` | | `classic` for the original gauge Overview instead. |
 | `configuration` | | `classic` for the original tile Configuration view instead. |
 | `events` | | `classic` for the original tile Event view instead. |
+| `system` | | `classic` for the original entities System view instead. |
 | `hide_views` | `[]` | Views to leave out: `overview`, `detail`, `cells`, `cells_3d`, `cells_2d`, `configuration`, `system`, `log`, `event`, `note`. |
 | `gauges` | | Change the classic Overview's gauges, keyed by `soc`, `pack_voltage`, `cell_voltage_min`, `cell_voltage_max`, `current`, `power`. Each takes [gauge card](https://www.home-assistant.io/dashboards/gauge/) options (`min`, `max`, `segments`, `severity`, `name`, …) that replace the defaults. |
 
@@ -222,6 +233,8 @@ dashboards:
   (see the comment at the top of `src/config/settings-card.js` for the options).
 - `custom:cellkeeper-events-card`: the Event view's cards. Options: `prefix`, `mode` (`status`,
   `log`, `catalog`), `days` (log, default 10).
+- `custom:cellkeeper-system-card`: the System view's cards. Options: `prefix`, `kind` (`link`,
+  `bms`, `hmi`).
 - `custom:cellkeeper-event-grid`: tiles for a pack's events that are active now
   (`show: active`) or have been active (`show: previous`); hidden when there are none.
   Options: `prefix`, `show`, `title`, `columns`.
