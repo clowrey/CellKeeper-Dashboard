@@ -11,7 +11,7 @@ import { noteView } from "./views/note.js";
 // View key -> generator(ctx, options, plotly). Keys are what `hide_views` takes.
 export const VIEWS = {
   overview: (ctx, options) => overviewView(ctx, options),
-  detail: (ctx) => detailView(ctx),
+  detail: (ctx, options) => detailView(ctx, options),
   cells: (ctx, _o, plotly) => cellsView(ctx, plotly),
   cells_3d: (ctx, _o, plotly) => (ctx.cellIds("cell_voltage").length ? cells3dView(ctx, plotly) : null),
   cells_2d: (ctx, _o, plotly) => (ctx.cellIds("cell_voltage").length ? cells2dView(ctx, plotly) : null),

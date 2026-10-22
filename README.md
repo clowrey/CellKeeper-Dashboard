@@ -44,6 +44,15 @@ The same page for a 108s LFP pack, idle and floating between balance charges:
 
 ![Overview of a 108s LFP pack: idle at 99.2 %, charge limited by cell voltage, a floating balance charge scheduled, 12 mV cell spread](https://raw.githubusercontent.com/clowrey/CellKeeper-Dashboard/main/docs/overview-ck1.webp)
 
+### The Detail view
+
+Every sensor the pack's HMI publishes, in groups: state of charge, pack voltages, current &
+power, energy today, cells, balancing, module temperatures, current limits, inverter (CAN),
+isolation, state, BMS board, board temperatures and HMI, with the raw temperature registers
+last. A group keeps all its sensors even when another view shows some of them too. Sensors from
+newer firmware go into the group their name fits, or *Other sensors*, so nothing new is hidden.
+Per-cell voltages and balancing times, log lines and events stay on their own views.
+
 ### The Configuration view
 
 Every BMS setting, grouped by what it controls, each with a line on what it does, and a picture
@@ -181,6 +190,7 @@ The icon paths in `src/icons.js` are generated from the logo outline in
 | `title` | `BMS Dashboard` | Dashboard title. |
 | `pack_name` | the HMI device's name | Name shown on the Overview's pack card. |
 | `overview` | | `classic` for the original gauge Overview instead. |
+| `detail` | | `classic` for the original Detail view instead. |
 | `configuration` | | `classic` for the original tile Configuration view instead. |
 | `events` | | `classic` for the original tile Event view instead. |
 | `system` | | `classic` for the original entities System view instead. |

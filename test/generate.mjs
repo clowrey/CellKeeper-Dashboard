@@ -115,6 +115,37 @@ check(
     toUnit(1, "furlong", "V") === undefined && toUnit(undefined, "V", "V") === undefined
 );
 
+{
+  const detail = config.views.find((v) => v.path === "detail");
+  const shown = [...referencedEntities(detail)];
+  const ownView = /_cell_voltage_\d+$|_cell_balancing_time_\d+$|_log(_\d+)?$|_event_(info|warning|critical|fatal)_/;
+  const sensors = Object.keys(hass.states).filter((id) => /^(binary_)?sensor\./.test(id) && !ownView.test(id));
+  const missing = sensors.filter((id) => !shown.includes(id));
+  check(`detail view: every sensor once (${missing.length} missing)`, !missing.length && shown.length === new Set(shown).size);
+  check(
+    "detail view: groups keep their own sensors",
+    JSON.stringify(detail).indexOf("pack_pos_to_chassis") > JSON.stringify(detail).indexOf('"Isolation"')
+  );
+  // Newer firmware's sensors land in their groups; an unknown one in Other sensors.
+  const newer = fakeHass();
+  for (const k of ["bms_firmware", "hmi_firmware", "bms_chip_temperature", "shunt_die_temperature", "shunt_ntc_temperature", "link_voltage", "frobnicator_level"]) {
+    const id = `sensor.${prefix}_${k}`;
+    newer.states[id] = { entity_id: id, state: "1", attributes: { friendly_name: `${prefix} ${k}` } };
+  }
+  const nd = (await generateDashboard({ prefix }, newer)).views.find((v) => v.path === "detail");
+  const groupOf = (k) => nd.sections.flatMap((s) => s.cards).find((c) => c.entities?.some((e) => e.entity.endsWith(`_${k}`)))?.title;
+  check(
+    "detail view: newer sensors go to their groups, unknown to Other",
+    groupOf("bms_firmware") === "BMS board" && groupOf("hmi_firmware") === "HMI" && groupOf("shunt_ntc_temperature") === "Board temperatures" &&
+      groupOf("bms_chip_temperature") === "Board temperatures" && groupOf("link_voltage") === "Pack voltages" &&
+      groupOf("frobnicator_level") === "Other sensors"
+  );
+  check(
+    "classic detail view still there",
+    JSON.stringify((await generateDashboard({ prefix, detail: "classic" }, hass)).views.find((v) => v.path === "detail")).includes("Voltage & Capacity")
+  );
+}
+
 const none = await generateDashboard({ prefix: "nope" }, hass);
 check("unknown prefix: one view explaining it", none.views.length === 1 && JSON.stringify(none).includes("No CellKeeper entities"));
 
