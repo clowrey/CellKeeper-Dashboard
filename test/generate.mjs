@@ -52,7 +52,7 @@ check(`all referenced entities exist (${missing.join(", ") || "none missing"})`,
 check(
   "views",
   JSON.stringify(config.views.map((v) => v.title)) ===
-    JSON.stringify(["Overview", "Cells", "Cells 3D", "Cells 2D", "Configuration", "System", "Log", "Event", "Note"])
+    JSON.stringify(["Overview", "Cells 3D", "Cells 2D", "Configuration", "System", "Log", "Event", "Note"])
 );
 check("every entity id uses the prefix", [...referencedEntities(config)].every((id) => id.split(".")[1].startsWith(`${prefix}_`)));
 

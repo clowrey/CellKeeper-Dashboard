@@ -14,7 +14,7 @@ strategy:
 
 ![Overview of a 96s NMC pack discharging: battery gauge at 99.7 %, power flow against the charge and discharge limits, 24 h chart, cell voltages with balancing, temperature, energy, isolation and inverter cards](https://raw.githubusercontent.com/clowrey/CellKeeper-Dashboard/main/docs/overview-ck0.webp)
 
-Views: **Overview** (below), **Cells** (live cell voltages and balancing), **Cells 3D** /
+Views: **Overview** (below), **Cells 3D** /
 **Cells 2D** (24 h cell voltage history), **Configuration** (all BMS settings), **System**, **Log**,
 **Event** (every event type, coloured by state) and **Note**.
 
@@ -185,7 +185,7 @@ The icon paths in `src/icons.js` are generated from the logo outline in
 | `configuration` | | `classic` for the original tile Configuration view instead. |
 | `events` | | `classic` for the original tile Event view instead. |
 | `system` | | `classic` for the original entities System view instead. |
-| `hide_views` | `[]` | Views to leave out: `overview`, `cells`, `cells_3d`, `cells_2d`, `configuration`, `system`, `log`, `event`, `note`. |
+| `hide_views` | `[]` | Views to leave out: `overview`, `cells_3d`, `cells_2d`, `configuration`, `system`, `log`, `event`, `note`. |
 | `gauges` | | Change the classic Overview's gauges, keyed by `soc`, `pack_voltage`, `cell_voltage_min`, `cell_voltage_max`, `current`, `power`. Each takes [gauge card](https://www.home-assistant.io/dashboards/gauge/) options (`min`, `max`, `segments`, `severity`, `name`, …) that replace the defaults. |
 
 The classic Overview's default gauge ranges suit a 96s NMC pack. For example, for a 16s LFP pack:

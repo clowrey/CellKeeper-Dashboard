@@ -4,7 +4,7 @@ import { define, MAX_CELLS } from "../context.js";
 
 // custom:cellkeeper-cells-card
 //   prefix: ck0
-//   cells_path: cells   view opened by "All cells"
+//   history_path: cells-2d   view opened by "History"
 //
 // Every cell's voltage as a bar, zoomed to the spread so a few mV show up, with the lowest and
 // highest cells called out, balancing cells marked (yellow = has balancing time, orange =
@@ -29,7 +29,7 @@ class CellKeeperCellsCard extends PackCard {
   static properties = { ...PackCard.properties, _hover: { state: true } };
 
   setConfig(config) {
-    super.setConfig({ cells_path: "cells", ...config });
+    super.setConfig({ history_path: "cells-2d", ...config });
   }
 
   _cellKeys() {
@@ -83,8 +83,8 @@ class CellKeeperCellsCard extends PackCard {
             <div class="label">Cells</div>
             <div class="dim">${cells.length} in series</div>
             <span class="spacer"></span>
-            <span class="link clickable" @click=${() => this.navigateView(this._config.cells_path)}
-              >All cells <ha-icon icon="mdi:chevron-right"></ha-icon
+            <span class="link clickable" @click=${() => this.navigateView(this._config.history_path)}
+              >History <ha-icon icon="mdi:chevron-right"></ha-icon
             ></span>
           </div>
           <div class="stats">
