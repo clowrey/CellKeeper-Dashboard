@@ -14,7 +14,8 @@ import {
 //   mode: voltage     voltage, or deviation: each cell against the pack's average at the time
 //   balancing: false  mark balancing cells to start with
 //   view: 2d          2d, or 3d: the same data as a surface you can turn
-//   height_3d: 560    height of the 3D view in px
+//   height: auto      heatmap height in px; auto fills the window below the card's other parts
+//   height_3d: auto   the same for the 3D view
 //
 // Every cell's voltage over time as a heatmap drawn on a canvas from one statistics request,
 // balancing cells optionally marked, the spread between the highest and lowest cell underneath, and a
@@ -26,6 +27,10 @@ const BALANCE_ACTIVE = "#FF9800";
 // Below the average teal, above it pink: the colours the cells card uses for lowest and highest.
 const DEVIATION_STOPS = (dark) => ["#00695c", "#4db6ac", dark ? "#2b2b2b" : "#eeeeee", "#f06292", "#ad1457"];
 const STORE = "cellkeeper-cell-history";
+// Room the rest of the page takes around each view's plot (toolbar, card header, axis, spread
+// strip, footer), so that "auto" fills the window without scrolling.
+const AROUND_2D = 250;
+const AROUND_3D = 175;
 
 function remembered() {
   try {
@@ -94,10 +99,11 @@ class CellKeeperCellHistoryCard extends PackCard {
     _loading: { state: true },
     _hover: { state: true },
     _width: { state: true },
+    _height: { state: true },
   };
 
   setConfig(config) {
-    super.setConfig({ range: "24h", mode: "voltage", balancing: false, view: "2d", height_3d: 560, ...config });
+    super.setConfig({ range: "24h", mode: "voltage", balancing: false, view: "2d", height: "auto", height_3d: "auto", ...config });
     const saved = remembered();
     this._range = RANGES[saved.range] ? saved.range : RANGES[this._config.range] ? this._config.range : "24h";
     this._mode = ["voltage", "deviation"].includes(saved.mode) ? saved.mode : this._config.mode;
@@ -113,7 +119,9 @@ class CellKeeperCellHistoryCard extends PackCard {
     // Only the plot area now shown counts: the one a 2D/3D switch just removed reports width 0.
     this._resize = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        if (entry.target === this._observed && entry.contentRect.width > 0) this._width = Math.round(entry.contentRect.width);
+        if (entry.target !== this._observed || entry.contentRect.width <= 0) continue;
+        this._width = Math.round(entry.contentRect.width);
+        this._height = Math.round(entry.contentRect.height);
       }
     });
     this._observed = undefined;
@@ -188,7 +196,7 @@ class CellKeeperCellHistoryCard extends PackCard {
     if (this._view === "3d") this._update3d(changed);
     else {
       this._drop3d();
-      if (["_data", "_mode", "_marks", "_width", "_view"].some((k) => changed.has(k))) this._draw();
+      if (["_data", "_mode", "_marks", "_width", "_height", "_view"].some((k) => changed.has(k))) this._draw();
     }
   }
 
@@ -223,7 +231,7 @@ class CellKeeperCellHistoryCard extends PackCard {
       }
       fresh = true;
     }
-    if (fresh || changed.has("_width")) this._gl.setSize(canvas.clientWidth, canvas.clientHeight);
+    if (fresh || changed.has("_width") || changed.has("_height")) this._gl.setSize(canvas.clientWidth, canvas.clientHeight);
     if ((fresh || changed.has("_data") || changed.has("_mode")) && this._data?.cols > 1) {
       this._gl.ink = rgbOf(getComputedStyle(this).getPropertyValue("--primary-text-color").trim());
       this._gl.setData(this._grid3d());
@@ -297,7 +305,7 @@ class CellKeeperCellHistoryCard extends PackCard {
           ? "No statistics for these cells in this range yet."
           : this._status3d;
     return html`<div class="body3d ${this._loading && d ? "stale" : ""}">
-        ${keyed(this._glKey ?? 0, html`<canvas class="gl" style="height:${this._config.height_3d}px"></canvas>`)}
+        ${keyed(this._glKey ?? 0, html`<canvas class="gl" style="height:${this._plotHeight(this._config.height_3d, 360, AROUND_3D)}"></canvas>`)}
         <div class="labels"></div>
         ${this._tip()} ${status ? html`<div class="msg">${status}</div>` : ""}
       </div>
@@ -305,6 +313,13 @@ class CellKeeperCellHistoryCard extends PackCard {
         ${this._ramp()}
         <span class="dim">Drag to turn · scroll or pinch to zoom · double-click to reset</span>
       </div>`;
+  }
+
+  // CSS height of a plot: the configured px, or the window's height less what is around the plot,
+  // but never under `least` px.
+  _plotHeight(config, least, around) {
+    const px = Number(config);
+    return Number.isFinite(px) && px > 0 ? `${px}px` : `max(${least}px, calc(100dvh - ${around}px))`;
   }
 
   // Colour bar for the current scale.
@@ -503,7 +518,7 @@ class CellKeeperCellHistoryCard extends PackCard {
     if (!this.hass || !this._config) return nothing;
     const d = this._data;
     const rows = d?.cells.length ?? packCells(this.hass, this.prefix).length;
-    const height = Math.min(720, Math.max(240, rows * 6));
+    const height = this._plotHeight(this._config.height, Math.min(720, Math.max(240, rows * 6)), AROUND_2D);
     const hours = RANGES[this._range].hours;
     const t1 = d ? d.t0 + d.cols * d.step : 0;
     const tickEvery = rows > 60 ? 12 : rows > 24 ? 8 : 4;
@@ -543,7 +558,7 @@ class CellKeeperCellHistoryCard extends PackCard {
           ${this._view === "3d"
             ? this._surface()
             : html`          <div class="plot">
-            <div class="yaxis" style="height:${height}px">
+            <div class="yaxis" style="height:${height}">
               ${(d?.cells ?? []).map((c, i) =>
                 c.n === 1 || c.n % tickEvery === 0
                   ? html`<span style="top:${((i + 0.5) / rows) * 100}%">${c.n}</span>`
@@ -553,7 +568,7 @@ class CellKeeperCellHistoryCard extends PackCard {
             <div class="area ${this._loading && d ? "stale" : ""}">
               <canvas
                 class="map"
-                style="height:${height}px"
+                style="height:${height}"
                 @pointermove=${(ev) => this._pick(ev, true)}
                 @pointerleave=${() => (this._hover = undefined)}
                 @click=${() => hv?.row !== undefined && this.moreInfo(d.cells[hv.row].id)}

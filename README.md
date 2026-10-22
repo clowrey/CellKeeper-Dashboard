@@ -14,8 +14,8 @@ strategy:
 
 ![Overview of a 96s NMC pack discharging: battery gauge at 99.7 %, power flow against the charge and discharge limits, 24 h chart, cell voltages with balancing, temperature, energy, isolation and inverter cards](https://raw.githubusercontent.com/clowrey/CellKeeper-Dashboard/main/docs/overview-ck0.webp)
 
-Views: **Overview** (below), **Cell History**, **Configuration** (all BMS settings), **System**,
-**Log**, **Event** (every event type, coloured by state) and **Note**.
+Views: **Overview** (below), **Event** (every event type, coloured by state), **Cell History**,
+**Configuration** (all BMS settings), **System**, **Log** and **Note**.
 
 **Cell History** is a heatmap of every cell over 6 h, 24 h, 7 d or 30 d, either as voltage or as
 each cell's difference from the pack average at the time, with the spread between the highest and
@@ -24,7 +24,7 @@ the pointer. Its **3D** button shows the same data, in the same colouring, as a 
 can turn and zoom (it keeps where you turned it; a phone starts looking down the time axis), with
 a crosshair and the same readout following the pointer. It reads Home
 Assistant's 5-minute and hourly statistics for all cells in one request instead of every cell's raw
-history, so 24 h opens in about a second, in 2D or 3D.
+history, so 24 h opens in about a second, in 2D or 3D. Both fill the window's height.
 
 ### The Overview
 
@@ -191,7 +191,7 @@ The icon paths in `src/icons.js` are generated from the logo outline in
 | `configuration` | | `classic` for the original tile Configuration view instead. |
 | `events` | | `classic` for the original tile Event view instead. |
 | `system` | | `classic` for the original entities System view instead. |
-| `hide_views` | `[]` | Views to leave out: `overview`, `cell_history`, `configuration`, `system`, `log`, `event`, `note`. |
+| `hide_views` | `[]` | Views to leave out: `overview`, `event`, `cell_history`, `configuration`, `system`, `log`, `note`. |
 | `gauges` | | Change the classic Overview's gauges, keyed by `soc`, `pack_voltage`, `cell_voltage_min`, `cell_voltage_max`, `current`, `power`. Each takes [gauge card](https://www.home-assistant.io/dashboards/gauge/) options (`min`, `max`, `segments`, `severity`, `name`, …) that replace the defaults. |
 
 The classic Overview's default gauge ranges suit a 96s NMC pack. For example, for a 16s LFP pack:
@@ -240,7 +240,8 @@ dashboards:
   cards. Option: `prefix`.
 - `custom:cellkeeper-cell-history-card`: the Cell History view. Options: `prefix`, `range` (`6h`,
   `24h`, `7d`, `30d`), `mode` (`voltage`, `deviation`), `balancing` (mark balancing cells), `view`
-  (`2d`, `3d`), `height_3d` (px). The viewer's last choices override these.
+  (`2d`, `3d`), `height` and `height_3d` (px; by default they fill the window). The viewer's last
+  choices override these.
 - `custom:cellkeeper-stat-card`: the Overview's small cards. Options: `prefix`, `kind`
   (`temperature`, `energy`, `isolation`, `inverter`), `navigate` (a view path for its header).
 - `custom:cellkeeper-settings-card`, `custom:cellkeeper-lock-card`: the Configuration view's cards

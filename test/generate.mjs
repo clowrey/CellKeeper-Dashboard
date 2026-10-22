@@ -52,7 +52,7 @@ check(`all referenced entities exist (${missing.join(", ") || "none missing"})`,
 check(
   "views",
   JSON.stringify(config.views.map((v) => v.title)) ===
-    JSON.stringify(["Overview", "Cell History", "Configuration", "System", "Log", "Event", "Note"])
+    JSON.stringify(["Overview", "Event", "Cell History", "Configuration", "System", "Log", "Note"])
 );
 const historyView = config.views.find((v) => v.title === "Cell History");
 check(

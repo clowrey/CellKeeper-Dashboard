@@ -10,11 +10,11 @@ import { noteView } from "./views/note.js";
 // View key -> generator(ctx, options). Keys are what `hide_views` takes.
 export const VIEWS = {
   overview: (ctx, options) => overviewView(ctx, options),
+  event: (ctx, options) => eventView(ctx, options),
   cell_history: (ctx) => (ctx.cellIds("cell_voltage").length ? cellHistoryView(ctx) : null),
   configuration: (ctx, options) => configurationView(ctx, options),
   system: (ctx, options) => systemView(ctx, options),
   log: (ctx) => logView(ctx),
-  event: (ctx, options) => eventView(ctx, options),
   note: () => noteView(),
 };
 
