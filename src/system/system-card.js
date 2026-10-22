@@ -56,8 +56,8 @@ class CellKeeperSystemCard extends PackCard {
   watched() {
     return {
       link: ["millis", "uptime_pico", "uptime_hmi", "system_state_text", "wifi_rssi"],
-      bms: ["serial", "board_revision", "board_strap_counts", "uptime_pico", "system_state_text", ...RAILS.map((r) => r.key)],
-      hmi: ["uptime_hmi", "internal_temperature", "heap_free", "heap_max_block", "loop_time", "wifi_ssid", "wifi_ip", "wifi_rssi", "bssid", "light:display_backlight", "button:hmi_restart"],
+      bms: ["serial", "board_revision", "board_strap_counts", "uptime_pico", "system_state_text", "bms_firmware", ...RAILS.map((r) => r.key)],
+      hmi: ["uptime_hmi", "hmi_firmware", "internal_temperature", "heap_free", "heap_max_block", "loop_time", "wifi_ssid", "wifi_ip", "wifi_rssi", "bssid", "light:display_backlight", "button:hmi_restart"],
     }[this._config.kind];
   }
 
@@ -124,6 +124,34 @@ class CellKeeperSystemCard extends PackCard {
     `;
   }
 
+  // Firmware row: "dab3751 · 2026-10-22 00:39 UTC" from the HMI's BMS/HMI Firmware sensors.
+  // missing: what to say when there is nothing to show.
+  _firmware(key, missing) {
+    const st = this.stateObj(key);
+    const text = this.str(key);
+    if (!st || !text || text === "unknown") {
+      if (!missing) return "";
+      return html`<div class="clickable" @click=${() => st && this.moreInfo(key)}>
+        <span>Firmware</span><i class="dim">${!st ? missing.noSensor : missing.notReported}</i>
+      </div>`;
+    }
+    const [build, time] = text.split(" · ");
+    const dirty = build.endsWith("-dirty");
+    return html`<div class="clickable" @click=${() => this.moreInfo(key)} title="Firmware commit and build time">
+      <span>Firmware</span><b class="num mono">${dirty ? build.slice(0, -6) : build}</b>
+      ${dirty ? html`<i class="tag warn">uncommitted build</i>` : ""}
+      ${time ? html`<i class="dim">built ${this._buildTime(time)}</i>` : ""}
+    </div>`;
+  }
+
+  // "2026-10-22 00:39 UTC" in the viewer's time zone and locale
+  _buildTime(text) {
+    const m = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}) UTC$/.exec(text);
+    if (!m) return text;
+    const d = new Date(Date.UTC(+m[1], m[2] - 1, +m[3], +m[4], +m[5]));
+    return d.toLocaleString(this.hass.locale?.language, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  }
+
   // ---- BMS ----
 
   _bms() {
@@ -148,6 +176,10 @@ class CellKeeperSystemCard extends PackCard {
                 <i class="dim">since ${started.toLocaleString(this.hass.locale?.language, { weekday: "short", hour: "2-digit", minute: "2-digit" })}</i>
               </div>`
             : ""}
+          ${this._firmware("bms_firmware", {
+            noSensor: "not shown by this HMI firmware",
+            notReported: "not reported by this BMS firmware",
+          })}
           ${serial ? html`<div class="clickable" @click=${() => this.moreInfo("serial")}><span>Serial</span><b class="num mono">${serial}</b></div>` : ""}
           ${rev
             ? html`<div class="clickable" @click=${() => this.moreInfo("board_strap_counts")}>
@@ -236,6 +268,7 @@ class CellKeeperSystemCard extends PackCard {
         </div>
         <div class="facts">
           ${up !== undefined ? html`<div class="clickable" @click=${() => this.moreInfo("uptime_hmi")}><span>Up</span><b>${fmtDuration(up / 3600) || "under a minute"}</b></div>` : ""}
+          ${this.has("hmi_firmware") ? this._firmware("hmi_firmware") : ""}
         </div>
 
         <div class="label sect">Wi-Fi</div>
@@ -461,6 +494,15 @@ class CellKeeperSystemCard extends PackCard {
       .facts i {
         font-style: normal;
         font-size: 12px;
+      }
+      .tag {
+        padding: 1px 8px;
+        border-radius: 10px;
+        font-weight: 500;
+      }
+      .tag.warn {
+        color: var(--ck-warn);
+        background: color-mix(in srgb, var(--ck-warn) 15%, transparent);
       }
       .rail {
         display: grid;
