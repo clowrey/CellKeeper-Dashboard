@@ -1,4 +1,5 @@
 import { html, css, nothing } from "lit";
+import { keyed } from "lit/directives/keyed.js";
 import { PackCard, baseStyles, fmt } from "../overview/base.js";
 import { define } from "../context.js";
 import { Surface3D } from "./surface.js";
@@ -114,14 +115,25 @@ class CellKeeperCellHistoryCard extends PackCard {
       }
     });
     this._observed = undefined;
+    // Back on the page (Home Assistant keeps views and reattaches them): watch the size again and
+    // give the 3D view its new canvas.
+    this.requestUpdate();
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     clearInterval(this._timer);
     this._resize?.disconnect();
-    this._gl?.destroy();
+    this._drop3d();
+  }
+
+  // Release the 3D view's WebGL context. A canvas whose context is gone can't draw again, so the
+  // next render puts in a new canvas.
+  _drop3d() {
+    if (!this._gl) return;
+    this._gl.destroy();
     this._gl = undefined;
+    this._glKey = (this._glKey ?? 0) + 1;
   }
 
   // Balancing sensors this pack has: { entity id: mark level }.
@@ -173,10 +185,7 @@ class CellKeeperCellHistoryCard extends PackCard {
     }
     if (this._view === "3d") this._update3d(changed);
     else {
-      if (this._gl) {
-        this._gl.destroy();
-        this._gl = undefined;
-      }
+      this._drop3d();
       if (["_data", "_mode", "_marks", "_width", "_view"].some((k) => changed.has(k))) this._draw();
     }
   }
@@ -193,6 +202,11 @@ class CellKeeperCellHistoryCard extends PackCard {
         this._gl = new Surface3D(canvas, this.renderRoot.querySelector(".labels"), {
           onHover: (hover) => (this._hover = hover),
           onClick: ({ row }) => this.moreInfo(this._data.cells[row].id),
+          // The system took the context (an app in the background, a GPU reset): start again.
+          onLost: () => {
+            this._drop3d();
+            this.requestUpdate();
+          },
         });
         this._status3d = undefined;
       } catch (err) {
@@ -276,7 +290,7 @@ class CellKeeperCellHistoryCard extends PackCard {
           ? "No statistics for these cells in this range yet."
           : this._status3d;
     return html`<div class="body3d ${this._loading && d ? "stale" : ""}">
-        <canvas class="gl" style="height:${this._config.height_3d}px"></canvas>
+        ${keyed(this._glKey ?? 0, html`<canvas class="gl" style="height:${this._config.height_3d}px"></canvas>`)}
         <div class="labels"></div>
         ${this._tip()} ${status ? html`<div class="msg">${status}</div>` : ""}
       </div>

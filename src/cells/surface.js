@@ -127,8 +127,8 @@ function multiply(a, b) {
 
 export class Surface3D {
   // canvas: where to draw; labels: an element over it for the axis labels.
-  // onHover({ k, row, x, y } | undefined), onClick({ k, row }).
-  constructor(canvas, labels, { onHover, onClick }) {
+  // onHover({ k, row, x, y } | undefined), onClick({ k, row }), onLost(): the context is gone.
+  constructor(canvas, labels, { onHover, onClick, onLost }) {
     const gl = canvas.getContext("webgl2", { antialias: true, premultipliedAlpha: true });
     if (!gl) throw new Error("This browser can't draw 3D (no WebGL 2).");
     this.gl = gl;
@@ -136,6 +136,7 @@ export class Surface3D {
     this.labelsEl = labels;
     this.onHover = onHover;
     this.onClick = onClick;
+    this.onLost = onLost;
     this.cam = { ...HOME };
     this.ink = [0.5, 0.5, 0.5];
     this.surface = compile(gl, SURFACE_VS, SURFACE_FS);
@@ -576,8 +577,14 @@ export class Surface3D {
     c.addEventListener("pointercancel", up);
     c.addEventListener("pointerleave", leave);
     c.addEventListener("wheel", wheel, { passive: false });
+    const lost = (ev) => {
+      ev.preventDefault();
+      this.onLost?.();
+    };
     c.addEventListener("dblclick", dbl);
+    c.addEventListener("webglcontextlost", lost);
     this._unlisten = () => {
+      c.removeEventListener("webglcontextlost", lost);
       c.removeEventListener("pointerdown", down);
       c.removeEventListener("pointermove", move);
       c.removeEventListener("pointerup", up);
