@@ -16,8 +16,8 @@ function voltage(card) {
   const wMax = card.num("number:cell_voltage_working_max");
   const sMax = card.num("number:cell_voltage_soft_max");
   if ([sMin, wMin, wMax, sMax].some((v) => v === undefined)) return "";
-  const cMin = (card.num("cell_voltage_min") ?? NaN) * 1000;
-  const cMax = (card.num("cell_voltage_max") ?? NaN) * 1000;
+  const cMin = (card.numIn("cell_voltage_min", "V") ?? NaN) * 1000;
+  const cMax = (card.numIn("cell_voltage_max", "V") ?? NaN) * 1000;
   const balStart = card.num("number:balancing_start_voltage");
   const balMin = card.num("number:minimum_balancing_voltage");
   const n = card.num("cell_count");
@@ -27,8 +27,8 @@ function voltage(card) {
   const pct = (v) => ((Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo)) * 100;
   const zone = (a, b, cls) => html`<div class="zone ${cls}" style="left:${pct(a)}%;width:${pct(b) - pct(a)}%"></div>`;
   const ordered = sMin < wMin && wMin < wMax && wMax < sMax;
-  const invMin = card.num("inverter_can_voltage_limit_min");
-  const invMax = card.num("inverter_can_voltage_limit_max");
+  const invMin = card.numIn("inverter_can_voltage_limit_min", "V");
+  const invMax = card.numIn("inverter_can_voltage_limit_max", "V");
   const hasCells = Number.isFinite(cMin) && Number.isFinite(cMax);
   return html`
     <div class="vw">
@@ -94,8 +94,8 @@ const DISCHARGE = [
 ];
 
 function limitStack(card, title, effectiveKey, parts, color) {
-  const effective = card.num(effectiveKey);
-  const items = parts.map(([k, name]) => ({ k, name, v: card.num(k) })).filter((i) => i.v !== undefined);
+  const effective = card.numIn(effectiveKey, "A");
+  const items = parts.map(([k, name]) => ({ k, name, v: card.numIn(k, "A") })).filter((i) => i.v !== undefined);
   if (effective === undefined && !items.length) return "";
   const finite = items.map((i) => i.v).filter((v) => v < NO_LIMIT_A);
   const scale = Math.max(1, ...finite);
@@ -180,8 +180,8 @@ function balancing(card) {
   const start = card.num("number:balancing_start_voltage");
   const minBal = card.num("number:minimum_balancing_voltage");
   const sMax = card.num("number:cell_voltage_soft_max");
-  const cMin = card.num("cell_voltage_min");
-  const cMax = card.num("cell_voltage_max");
+  const cMin = card.numIn("cell_voltage_min", "V");
+  const cMax = card.numIn("cell_voltage_max", "V");
   if (period === undefined) return "";
   const mv = (v) => (v === undefined ? undefined : v * 1000);
   const checks = [

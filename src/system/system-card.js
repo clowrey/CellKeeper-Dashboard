@@ -127,7 +127,7 @@ class CellKeeperSystemCard extends PackCard {
             ? `no data for ${ageText(bmsAge).replace(" ago", "")}`
             : "no data"
         )}
-        ${node("mdi:monitor-dashboard", "HMI", hmiOnline ? `Up ${fmtDuration(this.num("uptime_hmi") / 3600)}` : "Offline", hmiOnline ? "good" : "bad", () => this.moreInfo("uptime_hmi"))}
+        ${node("mdi:monitor-dashboard", "HMI", hmiOnline ? `Up ${fmtDuration(this.numIn("uptime_hmi", "s") / 3600)}` : "Offline", hmiOnline ? "good" : "bad", () => this.moreInfo("uptime_hmi"))}
         ${wire(hmiOnline, hmiOnline ? `Wi-Fi${rssi !== undefined ? ` · ${q.text.toLowerCase()} ${fmt(this.hass, rssi, 0)} dBm` : ""}` : "offline")}
         ${node("mdi:home-assistant", "Home Assistant", "This page", "good")}
       </div>
@@ -167,7 +167,7 @@ class CellKeeperSystemCard extends PackCard {
   _bms() {
     const serial = this.str("serial");
     const rev = this.str("board_revision");
-    const up = this.num("uptime_pico");
+    const up = this.numIn("uptime_pico", "s");
     const started = up !== undefined ? new Date(Date.now() - up * 1000) : undefined;
     const rails = RAILS.filter((r) => this.has(r.key));
     return html`
@@ -226,7 +226,7 @@ class CellKeeperSystemCard extends PackCard {
   }
 
   _rail(r) {
-    const v = this.num(r.key);
+    const v = this.numIn(r.key, "V");
     const lo = (r.hardMin ?? r.min) - (r.max - r.min) * 0.25;
     const hi = r.max + (r.max - r.min) * 0.25;
     const pct = (x) => ((Math.max(lo, Math.min(hi, x)) - lo) / (hi - lo)) * 100;
@@ -264,12 +264,12 @@ class CellKeeperSystemCard extends PackCard {
 
   _hmi() {
     const d = this.device;
-    const up = this.num("uptime_hmi");
+    const up = this.numIn("uptime_hmi", "s");
     const temp = this.num("internal_temperature");
     const tempC = this.tempC("internal_temperature");
-    const free = this.num("heap_free");
-    const block = this.num("heap_max_block");
-    const loop = this.num("loop_time");
+    const free = this.numIn("heap_free", "B");
+    const block = this.numIn("heap_max_block", "B");
+    const loop = this.numIn("loop_time", "ms");
     const rssi = this.num("wifi_rssi");
     const q = rssiQuality(rssi);
     const ip = this.str("wifi_ip");

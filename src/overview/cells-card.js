@@ -50,7 +50,7 @@ class CellKeeperCellsCard extends PackCard {
   render() {
     if (!this.hass || !this._config) return nothing;
     const cells = this._cellKeys()
-      .map((k, i) => ({ n: i + 1, v: this.num(k) }))
+      .map((k, i) => ({ n: i + 1, v: this.numIn(k, "V") }))
       .filter((c) => c.v !== undefined && c.v > 0.01);
     if (!cells.length) return nothing;
     const balancing = cellSet(this.str("cells_balancing"));
@@ -61,7 +61,7 @@ class CellKeeperCellsCard extends PackCard {
     const mean = vs.reduce((a, b) => a + b, 0) / vs.length;
     const minCell = cells.find((c) => c.v === lo);
     const maxCell = cells.find((c) => c.v === hi);
-    const spreadMv = (this.num("cell_voltage_delta") ?? hi - lo) * 1000;
+    const spreadMv = (this.numIn("cell_voltage_delta", "V") ?? hi - lo) * 1000;
     const rating = spreadMv <= 20 ? "good" : spreadMv <= 60 ? "warn" : "bad";
     // Zoom to the spread, but never tighter than 20 mV so a balanced pack looks flat.
     const span = Math.max(hi - lo, 0.02) * 1.25;

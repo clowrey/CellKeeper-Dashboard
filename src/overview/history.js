@@ -18,6 +18,8 @@ export async function fetchDay(hass, ids) {
       statistic_ids: ids,
       period: "5minute",
       types: ["mean"],
+      // In W whatever display unit the power sensor has been given.
+      units: { power: "W" },
     })
     .then((stats) =>
       Object.fromEntries(

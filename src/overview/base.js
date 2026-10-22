@@ -1,5 +1,5 @@
 import { LitElement, css } from "lit";
-import { toCelsius } from "../context.js";
+import { toCelsius, toUnit } from "../context.js";
 
 // Base for the Overview cards: pack prefix, entity helpers, and re-rendering only when an entity
 // the card shows has changed (hass changes many times a second across the whole house).
@@ -47,6 +47,12 @@ export class PackCard extends LitElement {
   // own unit, and judge them in °C, which is what the limits are written in.
   tempC(key) {
     return toCelsius(this.num(key), this.unit(key));
+  }
+
+  // Numeric state converted to `unit` (V, A, W, kWh, s, …) from whatever display unit the
+  // sensor has been switched to in HA; undefined if missing or not convertible.
+  numIn(key, unit) {
+    return toUnit(this.num(key), this.unit(key), unit);
   }
 
   tempUnit(key) {

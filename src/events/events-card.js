@@ -200,7 +200,7 @@ class CellKeeperEventsCard extends PackCard {
     const info = active.filter((e) => e.level === "INFO");
     const earlier = events.filter((e) => !e.active && e.count > 0).sort((a, b) => b.count - a.count);
     const worst = severe[0]?.level;
-    const uptime = this.num("uptime_pico");
+    const uptime = this.numIn("uptime_pico", "s");
     const contactors = this.str("contactor_state_text");
     const headline = !worst
       ? "All clear"

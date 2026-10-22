@@ -372,7 +372,7 @@ export function configurationView(ctx, options = {}) {
         { key: "sensor:isolation_resistance", name: "Isolation resistance", digits: 1 },
         { key: "sensor:pack_pos_to_chassis", name: "Pack + to chassis" },
         { key: "sensor:pack_neg_to_chassis", name: "Pack − to chassis" },
-        { key: "sensor:isolation_check_age", name: "Last open-contactor check", unit: "h", factor: 1 / 3600 },
+        { key: "sensor:isolation_check_age", name: "Last open-contactor check", base: "s", unit: "h", factor: 1 / 3600 },
         { key: "button:calibrate_isolation_zero", name: "Calibrate isolation zero", help: "Battery stopped, leak ruled out.", label: "Calibrate", danger: true },
       ],
     }),

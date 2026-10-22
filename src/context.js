@@ -69,6 +69,28 @@ export function toCelsius(value, unit) {
   }
 }
 
+// Units Home Assistant lets a user switch a sensor to (per entity, in its settings), as factors
+// to the first unit of each family.
+const UNIT_FAMILIES = [
+  { V: 1, mV: 1e-3, µV: 1e-6, kV: 1e3, MV: 1e6 },
+  { A: 1, mA: 1e-3 },
+  { W: 1, mW: 1e-3, kW: 1e3, MW: 1e6, GW: 1e9 },
+  { Wh: 1, mWh: 1e-3, kWh: 1e3, MWh: 1e6, GWh: 1e9, J: 1 / 3600, kJ: 1e3 / 3600, MJ: 1e6 / 3600, GJ: 1e9 / 3600 },
+  { s: 1, ms: 1e-3, µs: 1e-6, min: 60, h: 3600, d: 86400 },
+  { B: 1, kB: 1e3, MB: 1e6, GB: 1e9, KiB: 1024, MiB: 1024 ** 2, GiB: 1024 ** 3 },
+  { Ω: 1, kΩ: 1e3, MΩ: 1e6, GΩ: 1e9 },
+];
+
+// value (in unit `from`, as the sensor reports it) converted to unit `to`. No unit is taken as
+// already `to`; a unit that can't be converted gives undefined rather than a wrong number.
+export function toUnit(value, from, to) {
+  if (value === undefined || !Number.isFinite(value)) return undefined;
+  const f = (from ?? "").trim();
+  if (f === "" || f === to) return value;
+  const family = UNIT_FAMILIES.find((u) => f in u && to in u);
+  return family ? (value * family[f]) / family[to] : undefined;
+}
+
 // CellKeeper prefixes found in HA: every <prefix> with a sensor.<prefix>_system_state_text.
 export function findPrefixes(hass) {
   const prefixes = new Set();

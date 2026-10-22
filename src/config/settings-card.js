@@ -252,7 +252,8 @@ class CellKeeperSettingsCard extends PackCard {
   }
 
   _valueControl(row, st) {
-    const raw = parseFloat(st.state);
+    // `base`: the unit the row's factor expects, e.g. s for a duration shown in h.
+    const raw = row.base ? this.numIn(row.key, row.base) ?? NaN : parseFloat(st.state);
     const unit = row.unit ?? st.attributes.unit_of_measurement ?? "";
     const text = Number.isFinite(raw) ? fmt(this.hass, raw * (row.factor ?? 1), row.digits ?? 1) : st.state;
     return html`<span class="value num">${text}<span class="unit">${unit}</span></span>`;

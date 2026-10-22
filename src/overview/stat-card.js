@@ -118,11 +118,11 @@ class CellKeeperStatCard extends PackCard {
   }
 
   _energy() {
-    const chg = this.num("energy_daily_charge");
-    const dis = this.num("energy_daily_discharge");
-    const net = this.num("energy_daily_net") ?? (chg ?? 0) - (dis ?? 0);
+    const chg = this.numIn("energy_daily_charge", "kWh");
+    const dis = this.numIn("energy_daily_discharge", "kWh");
+    const net = this.numIn("energy_daily_net", "kWh") ?? (chg ?? 0) - (dis ?? 0);
     const cap = this.num("capacity");
-    const v = this.num("pack_internal_voltage");
+    const v = this.numIn("pack_internal_voltage", "V");
     const packKwh = cap && v ? (cap * v) / 1000 : undefined;
     const max = Math.max(chg ?? 0, dis ?? 0, 0.001);
     const bar = (key, value, label, color) => html`
@@ -146,19 +146,19 @@ class CellKeeperStatCard extends PackCard {
   _isolation() {
     const r = this.num("isolation_resistance");
     const unit = this.unit("isolation_resistance") || "MΩ";
-    const ohms = r === undefined ? undefined : r * ({ "MΩ": 1e6, "kΩ": 1e3, "Ω": 1 }[unit] ?? 1e6);
-    const v = this.num("pack_internal_voltage");
+    const ohms = this.unit("isolation_resistance") ? this.numIn("isolation_resistance", "Ω") : r === undefined ? undefined : r * 1e6;
+    const v = this.numIn("pack_internal_voltage", "V");
     const perVolt = ohms !== undefined && v ? ohms / v : undefined;
     // IEC 61851 / ISO 6469: ≥ 500 Ω/V is healthy for DC, below 100 Ω/V is a fault.
     const rating = perVolt === undefined ? "dim" : perVolt >= 500 ? "good" : perVolt >= 100 ? "warn" : "bad";
     const ratingText = { good: "Healthy (≥ 500 Ω/V)", warn: "Low (< 500 Ω/V)", bad: "Fault (< 100 Ω/V)", dim: "" }[rating];
-    const pos = this.num("pack_pos_to_chassis");
-    const neg = this.num("pack_neg_to_chassis");
-    const age = this.num("isolation_check_age");
+    const pos = this.numIn("pack_pos_to_chassis", "V");
+    const neg = this.numIn("pack_neg_to_chassis", "V");
+    const age = this.numIn("isolation_check_age", "s");
     const closed = this.str("contactor_state_text") === "CLOSED";
     return html`
       <div class="headline clickable" @click=${() => this.moreInfo("isolation_resistance")}>
-        <span class="big num ${rating}">${r >= 100 && unit === "MΩ" ? "≥ " : ""}${fmt(this.hass, r, r >= 10 ? 0 : 2)}<span class="unit">${unit}</span></span>
+        <span class="big num ${rating}">${ohms >= 1e8 ? "≥ " : ""}${fmt(this.hass, r, r >= 10 ? 0 : 2)}<span class="unit">${unit}</span></span>
       </div>
       <div class="sub ${rating}">${ratingText}</div>
       <div class="rows">
@@ -175,8 +175,8 @@ class CellKeeperStatCard extends PackCard {
 
   _inverter() {
     const soc = this.num("inverter_can_soc");
-    const vmin = this.num("inverter_can_voltage_limit_min");
-    const vmax = this.num("inverter_can_voltage_limit_max");
+    const vmin = this.numIn("inverter_can_voltage_limit_min", "V");
+    const vmax = this.numIn("inverter_can_voltage_limit_max", "V");
     const full = this.num("inverter_can_capacity_full");
     const rem = this.num("inverter_can_capacity_remaining");
     const detected = this.hass.states[`sensor.${this.prefix}_event_info_inverter_detected`]?.state?.includes("INFO");

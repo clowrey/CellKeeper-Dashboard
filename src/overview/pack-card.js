@@ -111,9 +111,9 @@ class CellKeeperPackCard extends PackCard {
 
   // Effective limit and the component that sets it ("" when nothing reported).
   _limit(effectiveKey, components) {
-    const effective = this.num(effectiveKey);
+    const effective = this.numIn(effectiveKey, "A");
     if (effective === undefined) return undefined;
-    const values = components.map(([k, name]) => [this.num(k), name]).filter(([v]) => v !== undefined);
+    const values = components.map(([k, name]) => [this.numIn(k, "A"), name]).filter(([v]) => v !== undefined);
     const match = values.find(([v]) => Math.abs(v - effective) < 0.05);
     return { value: effective, reason: match?.[1] ?? "" };
   }
@@ -123,10 +123,10 @@ class CellKeeperPackCard extends PackCard {
   render() {
     if (!this.hass || !this._config) return nothing;
     const soc = this.num("soc");
-    const current = this.num("current");
-    const voltage = this.num("pack_internal_voltage");
+    const current = this.numIn("current", "A");
+    const voltage = this.numIn("pack_internal_voltage", "V");
     const capacity = this.num("capacity");
-    const power = this.num("power_w") ?? (current !== undefined && voltage !== undefined ? current * voltage : undefined);
+    const power = this.numIn("power_w", "W") ?? (current !== undefined && voltage !== undefined ? current * voltage : undefined);
     const mode = current === undefined ? "unknown" : current > IDLE_A ? "charging" : current < -IDLE_A ? "discharging" : "idle";
     const events = this._events();
     const severe = events.active.filter((e) => SEVERE.includes(e.level));
@@ -262,7 +262,7 @@ class CellKeeperPackCard extends PackCard {
   _flow(mode, current, power, voltage, soc, capacity) {
     const charge = this._limit("current_limit_effective_charge", CHARGE_LIMITS);
     const discharge = this._limit("current_limit_effective_discharge", DISCHARGE_LIMITS);
-    const out = this.num("pack_output_voltage");
+    const out = this.numIn("pack_output_voltage", "V");
     const [pv, pu] = fmtPower(this.hass, power === undefined ? undefined : Math.abs(power));
     const label = { charging: "Charging", discharging: "Discharging", idle: "Idle", unknown: "–" }[mode];
     const color = { charging: "var(--ck-charge)", discharging: "var(--ck-discharge)" }[mode] ?? "var(--ck-muted)";
@@ -308,7 +308,7 @@ class CellKeeperPackCard extends PackCard {
     const lim = (l) => (l && l.value < NO_LIMIT_A ? l.value : undefined);
     const c = lim(charge);
     const d = lim(discharge);
-    const hard = Math.max(this.num("current_limit_hard_charge") ?? 0, this.num("current_limit_hard_discharge") ?? 0);
+    const hard = Math.max(this.numIn("current_limit_hard_charge", "A") ?? 0, this.numIn("current_limit_hard_discharge", "A") ?? 0);
     const scale = Math.max(hard, c ?? 0, d ?? 0, Math.abs(current ?? 0), 1) * 1.05;
     const pos = (a) => 50 + (Math.max(-scale, Math.min(scale, a)) / scale) * 50;
     const marker = current === undefined ? undefined : pos(current);
@@ -342,7 +342,7 @@ class CellKeeperPackCard extends PackCard {
     const soc = [...(this._day?.soc ?? [])];
     const power = [...(this._day?.power ?? [])];
     const liveSoc = this.num("soc");
-    const livePower = this.num("power_w");
+    const livePower = this.numIn("power_w", "W");
     if (liveSoc !== undefined) soc.push([now, liveSoc]);
     if (livePower !== undefined) power.push([now, livePower]);
     const W = 1000;

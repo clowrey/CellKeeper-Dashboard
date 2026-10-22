@@ -7,7 +7,7 @@ globalThis.HTMLElement = class {};
 globalThis.customElements = { define() {}, get() {} };
 
 const { generateDashboard } = await import("../src/strategy.js");
-const { toCelsius } = await import("../src/context.js");
+const { toCelsius, toUnit } = await import("../src/context.js");
 
 const fixture = JSON.parse(readFileSync(new URL("./fixtures/ck0.json", import.meta.url), "utf8"));
 const prefix = process.argv.find((a, i) => i > 1 && !a.startsWith("--")) ?? "ck0";
@@ -105,6 +105,14 @@ check(
   near(toCelsius(33.2, "°C"), 33.2) && near(toCelsius(91.8, "°F"), 33.22) && near(toCelsius(306.35, "K"), 33.2) &&
     near(toCelsius(33.2, ""), 33.2) && near(toCelsius(33.2, undefined), 33.2) && toCelsius(33.2, "%") === undefined &&
     toCelsius(undefined, "°F") === undefined
+);
+
+check(
+  "units: V/mV, kW→W, Wh→kWh, h→s, MΩ→Ω, ms; no unit passes, others don't",
+  near(toUnit(3650, "mV", "V"), 3.65) && near(toUnit(1.27, "kW", "W"), 1270) && near(toUnit(800, "Wh", "kWh"), 0.8) &&
+    near(toUnit(2, "h", "s"), 7200) && near(toUnit(100, "MΩ", "Ω"), 1e8) && near(toUnit(0.044, "s", "ms"), 44) &&
+    near(toUnit(3.65, "", "V"), 3.65) && near(toUnit(3.65, "V", "V"), 3.65) && toUnit(3.65, "A", "V") === undefined &&
+    toUnit(1, "furlong", "V") === undefined && toUnit(undefined, "V", "V") === undefined
 );
 
 const none = await generateDashboard({ prefix: "nope" }, hass);
