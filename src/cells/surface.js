@@ -8,8 +8,10 @@ const AX = 1.1;
 const AY = 0.55;
 const AZ = 0.5;
 const TARGET = [0, 0, AZ * 0.1];
-// Looking from the front (cell 1) a little from the right, so time runs left to right.
-const HOME = { yaw: -1.3, pitch: 0.5, dist: 2.5 };
+// Where the camera starts. A wide view looks from the front (cell 1) a little from the right, so
+// time runs left to right; a tall one (a phone) looks down the time axis, the newest end nearest.
+const HOME_WIDE = { yaw: -1.3, pitch: 0.5, dist: 2.5 };
+const HOME_TALL = { yaw: -0.38, pitch: 0.7, dist: 4.7 };
 
 const SURFACE_VS = `#version 300 es
 in vec3 aPos;
@@ -127,8 +129,9 @@ function multiply(a, b) {
 
 export class Surface3D {
   // canvas: where to draw; labels: an element over it for the axis labels.
-  // onHover({ k, row, x, y } | undefined), onClick({ k, row }), onLost(): the context is gone.
-  constructor(canvas, labels, { onHover, onClick, onLost }) {
+  // onHover({ k, row, x, y } | undefined), onClick({ k, row }), onLost(): the context is gone,
+  // onCamera({ yaw, pitch, dist }): the viewer turned or zoomed; camera: where to start.
+  constructor(canvas, labels, { onHover, onClick, onLost, onCamera, camera }) {
     const gl = canvas.getContext("webgl2", { antialias: true, premultipliedAlpha: true });
     if (!gl) throw new Error("This browser can't draw 3D (no WebGL 2).");
     this.gl = gl;
@@ -137,7 +140,9 @@ export class Surface3D {
     this.onHover = onHover;
     this.onClick = onClick;
     this.onLost = onLost;
-    this.cam = { ...HOME };
+    this.onCamera = onCamera;
+    const ok = camera && ["yaw", "pitch", "dist"].every((k) => Number.isFinite(camera[k]));
+    this.cam = ok ? { ...camera } : undefined;
     this.ink = [0.5, 0.5, 0.5];
     this.surface = compile(gl, SURFACE_VS, SURFACE_FS);
     this.line = compile(gl, LINE_VS, LINE_FS);
@@ -232,11 +237,21 @@ export class Surface3D {
     this.h = height;
     this.canvas.width = Math.round(width * dpr);
     this.canvas.height = Math.round(height * dpr);
+    this.cam ??= this._home();
     this.draw();
   }
 
+  _home() {
+    return { ...(this.h > this.w ? HOME_TALL : HOME_WIDE) };
+  }
+
+  _cameraMoved() {
+    this.onCamera?.({ ...this.cam });
+  }
+
   reset() {
-    this.cam = { ...HOME };
+    this.cam = this._home();
+    this._cameraMoved();
     this.draw();
   }
 
@@ -516,6 +531,7 @@ export class Surface3D {
     let moved = 0;
     let pinch;
     let pending;
+    let zoomed;
     const down = (ev) => {
       c.setPointerCapture(ev.pointerId);
       pointers.set(ev.pointerId, [ev.clientX, ev.clientY]);
@@ -560,6 +576,8 @@ export class Surface3D {
         const r = c.getBoundingClientRect();
         const hit = this._pick(ev.clientX - r.left, ev.clientY - r.top);
         if (hit) this.onClick(hit);
+      } else if (was && !pointers.size) {
+        this._cameraMoved();
       }
     };
     const leave = () => {
@@ -569,6 +587,8 @@ export class Surface3D {
       ev.preventDefault();
       this.cam.dist = Math.min(8, Math.max(1.4, this.cam.dist * Math.exp(ev.deltaY * 0.001)));
       this.draw();
+      clearTimeout(zoomed);
+      zoomed = setTimeout(() => this._cameraMoved(), 300);
     };
     const dbl = () => this.reset();
     c.addEventListener("pointerdown", down);
@@ -593,6 +613,7 @@ export class Surface3D {
       c.removeEventListener("wheel", wheel);
       c.removeEventListener("dblclick", dbl);
       if (pending) cancelAnimationFrame(pending);
+      clearTimeout(zoomed);
       if (this._frame) cancelAnimationFrame(this._frame);
     };
   }

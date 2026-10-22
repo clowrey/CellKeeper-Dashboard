@@ -103,6 +103,8 @@ class CellKeeperCellHistoryCard extends PackCard {
     this._mode = ["voltage", "deviation"].includes(saved.mode) ? saved.mode : this._config.mode;
     this._view = ["2d", "3d"].includes(saved.view) ? saved.view : this._config.view;
     this._marks = typeof saved.balancing === "boolean" ? saved.balancing : !!this._config.balancing;
+    // Where the viewer last turned the 3D view, kept through 2D/3D switches and visits.
+    this._camera = saved.camera;
   }
 
   connectedCallback() {
@@ -203,6 +205,11 @@ class CellKeeperCellHistoryCard extends PackCard {
           onHover: (hover) => (this._hover = hover),
           onClick: ({ row }) => this.moreInfo(this._data.cells[row].id),
           // The system took the context (an app in the background, a GPU reset): start again.
+          camera: this._camera,
+          onCamera: (camera) => {
+            this._camera = camera;
+            remember({ camera });
+          },
           onLost: () => {
             this._drop3d();
             this.requestUpdate();
