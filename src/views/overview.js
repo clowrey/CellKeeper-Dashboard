@@ -114,6 +114,15 @@ function pressTile(ctx, key, name, icon, color, confirm) {
   });
 }
 
+// Home Assistant's own "mobile" breakpoint, as in the card visibility editor.
+const MOBILE = "(max-width: 767px)";
+const NOT_MOBILE = "(min-width: 768px)";
+
+// A card shown only when the screen matches the media query.
+function onScreen(card, media_query) {
+  return card && { ...card, visibility: [{ condition: "screen", media_query }] };
+}
+
 function statCard(ctx, kind, sensor, navigate) {
   return ctx.has(ctx.id("sensor", sensor))
     ? { type: "custom:cellkeeper-stat-card", prefix: ctx.prefix, kind, ...(navigate && { navigate }) }
@@ -139,6 +148,9 @@ export function overviewView(ctx, options) {
       {
         column_span: 2,
         cards: [
+          // On a phone the sections stack, so today's energy comes above the cells there; wider
+          // screens show it in the right-hand column.
+          onScreen(statCard(ctx, "energy", "energy_daily_charge"), MOBILE),
           hasCells ? { type: "custom:cellkeeper-cells-card", prefix: ctx.prefix } : null,
           gridCard({
             type: "grid",
@@ -164,7 +176,7 @@ export function overviewView(ctx, options) {
         column_span: 2,
         cards: [
           statCard(ctx, "temperature", "module_temperature_max"),
-          statCard(ctx, "energy", "energy_daily_charge"),
+          onScreen(statCard(ctx, "energy", "energy_daily_charge"), NOT_MOBILE),
           statCard(ctx, "isolation", "isolation_resistance", "configuration"),
           statCard(ctx, "inverter", "inverter_can_soc"),
         ],

@@ -41,8 +41,8 @@ One page that answers "is the pack OK, and what is it doing?":
   values, click for the full history.
 - **Cells**: every cell's voltage zoomed to the spread, the highest (limits charging) and lowest
   (limits discharging) cells marked, balancing cells flagged, and the spread rated.
-- **Temperature**, **Energy today**, **Isolation** (rated in Ω/V) and **Inverter link** cards, and
-  Run / Stop / Calibrate buttons that ask before they act.
+- **Temperature**, **Energy today** (above the cells on a phone), **Isolation** (rated in Ω/V) and
+  **Inverter link** cards, and Run / Stop / Calibrate buttons that ask before they act.
 
 Everything is clickable through to the entity's history or the view with the details, and the
 page reflows from phone to wide screen in light and dark themes.
