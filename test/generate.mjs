@@ -52,15 +52,12 @@ check(`all referenced entities exist (${missing.join(", ") || "none missing"})`,
 check(
   "views",
   JSON.stringify(config.views.map((v) => v.title)) ===
-    JSON.stringify(["Overview", "Cells 3D", "Cells 2D", "Configuration", "System", "Log", "Event", "Note"])
+    JSON.stringify(["Overview", "Cell History", "Configuration", "System", "Log", "Event", "Note"])
 );
-const noPlotly = await generateDashboard({ prefix }, hass, { hasPlotly: false });
-const view = (cfg, title) => JSON.stringify(cfg.views.find((v) => v.title === title));
+const historyView = config.views.find((v) => v.title === "Cell History");
 check(
-  "Cells 2D is drawn without Plotly, Cells 3D asks for it",
-  view(noPlotly, "Cells 2D").includes("custom:cellkeeper-cell-history-card") &&
-    !view(noPlotly, "Cells 3D").includes("cellkeeper-cells-3d-card") &&
-    view(config, "Cells 3D").includes("custom:cellkeeper-cells-3d-card")
+  "Cell History view: the history card at path cell-history",
+  historyView?.path === "cell-history" && JSON.stringify(historyView).includes("custom:cellkeeper-cell-history-card")
 );
 check("every entity id uses the prefix", [...referencedEntities(config)].every((id) => id.split(".")[1].startsWith(`${prefix}_`)));
 
@@ -76,12 +73,12 @@ check("older firmware: no balance charge card", !oldText.includes("balance_charg
 check("older firmware: no module ID event tiles", !oldText.includes("module_id"));
 
 const custom = await generateDashboard(
-  { prefix, overview: "classic", hide_views: ["note", "cells_3d"], gauges: { pack_voltage: { min: 40, max: 58 } } },
+  { prefix, overview: "classic", hide_views: ["note", "cell_history"], gauges: { pack_voltage: { min: 40, max: 58 } } },
   hass
 );
 const packGauge = JSON.stringify(custom.views[0]).match(/"entity":"sensor\.\w+_pack_internal_voltage"[^}]*/)[0];
 check("classic overview: gauges option overrides min/max", packGauge.includes('"min":40') && packGauge.includes('"max":58'));
-check("hide_views drops views", !custom.views.some((v) => v.title === "Note" || v.title === "Cells 3D"));
+check("hide_views drops views", !custom.views.some((v) => v.title === "Note" || v.title === "Cell History"));
 
 const overviewTypes = JSON.stringify(config.views[0]);
 check(

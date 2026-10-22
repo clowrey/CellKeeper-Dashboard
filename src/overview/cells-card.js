@@ -5,7 +5,7 @@ import { cellSet } from "../cells/history.js";
 
 // custom:cellkeeper-cells-card
 //   prefix: ck0
-//   history_path: cells-2d   view opened by "History"
+//   history_path: cell-history   view opened by "History"
 //
 // Every cell's voltage as a bar, zoomed to the spread so a few mV show up, with the lowest and
 // highest cells called out, balancing cells marked (yellow = has balancing time, orange =
@@ -18,7 +18,7 @@ class CellKeeperCellsCard extends PackCard {
   static properties = { ...PackCard.properties, _hover: { state: true } };
 
   setConfig(config) {
-    super.setConfig({ history_path: "cells-2d", ...config });
+    super.setConfig({ history_path: "cell-history", ...config });
   }
 
   _cellKeys() {

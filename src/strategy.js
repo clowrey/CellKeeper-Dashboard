@@ -1,17 +1,16 @@
 import { DEFAULT_PREFIX, PackContext } from "./context.js";
 import { overviewView } from "./views/overview.js";
-import { cells3dView, cells2dView } from "./views/cells.js";
+import { cellHistoryView } from "./views/cells.js";
 import { configurationView } from "./views/configuration.js";
 import { systemView } from "./views/system.js";
 import { logView } from "./views/log.js";
 import { eventView } from "./views/event.js";
 import { noteView } from "./views/note.js";
 
-// View key -> generator(ctx, options, plotly). Keys are what `hide_views` takes.
+// View key -> generator(ctx, options). Keys are what `hide_views` takes.
 export const VIEWS = {
   overview: (ctx, options) => overviewView(ctx, options),
-  cells_3d: (ctx, _o, plotly) => (ctx.cellIds("cell_voltage").length ? cells3dView(ctx, plotly) : null),
-  cells_2d: (ctx) => (ctx.cellIds("cell_voltage").length ? cells2dView(ctx) : null),
+  cell_history: (ctx) => (ctx.cellIds("cell_voltage").length ? cellHistoryView(ctx) : null),
   configuration: (ctx, options) => configurationView(ctx, options),
   system: (ctx, options) => systemView(ctx, options),
   log: (ctx) => logView(ctx),
@@ -19,24 +18,9 @@ export const VIEWS = {
   note: () => noteView(),
 };
 
-const PLOTLY_HINT = {
-  type: "markdown",
-  content:
-    "This chart needs **Plotly Graph Card**. Install it from HACS (search for *plotly*), " +
-    "then reload this dashboard.",
-};
-
-// Wait briefly for plotly-graph: dashboard resources load in parallel with this one.
-async function plotlyInstalled() {
-  if (customElements.get("plotly-graph")) return true;
-  const timeout = new Promise((resolve) => setTimeout(() => resolve(false), 3000));
-  return Promise.race([customElements.whenDefined("plotly-graph").then(() => true), timeout]);
-}
-
-export async function generateDashboard(config, hass, { hasPlotly = true } = {}) {
+export async function generateDashboard(config, hass) {
   const prefix = config.prefix || DEFAULT_PREFIX;
   const ctx = new PackContext(prefix, hass);
-  const plotly = (card) => (hasPlotly ? card : PLOTLY_HINT);
 
   if (!ctx.has(ctx.id("sensor", "system_state_text")) && !ctx.has(ctx.id("sensor", "soc"))) {
     return {
@@ -62,7 +46,7 @@ export async function generateDashboard(config, hass, { hasPlotly = true } = {})
   const views = Object.entries(VIEWS)
     .filter(([key]) => !hidden.has(key))
     .map(([key, view]) => {
-      const v = view(ctx, config, plotly);
+      const v = view(ctx, config);
       return v && { path: key.replace(/_/g, "-"), ...v };
     })
     .filter(Boolean);
@@ -71,7 +55,7 @@ export async function generateDashboard(config, hass, { hasPlotly = true } = {})
 
 export class CellKeeperDashboardStrategy extends HTMLElement {
   static async generate(config, hass) {
-    return generateDashboard(config, hass, { hasPlotly: await plotlyInstalled() });
+    return generateDashboard(config, hass);
   }
 
   static async getConfigElement() {

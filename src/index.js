@@ -7,7 +7,6 @@ import "./overview/pack-card.js";
 import "./overview/cells-card.js";
 import "./overview/stat-card.js";
 import "./cells/history-card.js";
-import "./cells/surface-card.js";
 import "./config/settings-card.js";
 import "./config/lock-card.js";
 import "./events/events-card.js";

@@ -1,6 +1,7 @@
 import { html, css, nothing } from "lit";
 import { PackCard, baseStyles, fmt } from "../overview/base.js";
 import { define } from "../context.js";
+import { surfaceConfig } from "./surface.js";
 import {
   RANGES, REFRESH_MS, VOLTAGE_STOPS, balanceMarks, colorTable, columnStats, fetchBalancing, fetchCellHistory, packCells,
   percentile,
@@ -11,10 +12,13 @@ import {
 //   range: 24h        6h, 24h, 7d or 30d to start with (the last one picked is remembered)
 //   mode: voltage     voltage, or deviation: each cell against the pack's average at the time
 //   balancing: false  mark balancing cells to start with
+//   view: 2d          2d, or 3d: a surface drawn by Plotly Graph Card (needs it installed)
+//   height_3d: 700    height of the 3D plot in px
 //
 // Every cell's voltage over time as a heatmap drawn on a canvas from one statistics request,
 // balancing cells optionally marked, the spread between the highest and lowest cell underneath, and a
-// readout of the cell and time under the pointer. Refreshes every 5 minutes.
+// readout of the cell and time under the pointer. Refreshes every 5 minutes. The 3D view shows
+// the same data as a surface you can turn.
 
 const BALANCE = "#FDD835";
 const BALANCE_ACTIVE = "#FF9800";
@@ -59,6 +63,8 @@ class CellKeeperCellHistoryCard extends PackCard {
     _range: { state: true },
     _mode: { state: true },
     _marks: { state: true },
+    _view: { state: true },
+    _status3d: { state: true },
     _data: { state: true },
     _error: { state: true },
     _loading: { state: true },
@@ -67,10 +73,11 @@ class CellKeeperCellHistoryCard extends PackCard {
   };
 
   setConfig(config) {
-    super.setConfig({ range: "24h", mode: "voltage", balancing: false, ...config });
+    super.setConfig({ range: "24h", mode: "voltage", balancing: false, view: "2d", height_3d: 700, ...config });
     const saved = remembered();
     this._range = RANGES[saved.range] ? saved.range : RANGES[this._config.range] ? this._config.range : "24h";
     this._mode = ["voltage", "deviation"].includes(saved.mode) ? saved.mode : this._config.mode;
+    this._view = ["2d", "3d"].includes(saved.view) ? saved.view : this._config.view;
     this._marks = typeof saved.balancing === "boolean" ? saved.balancing : !!this._config.balancing;
   }
 
@@ -133,7 +140,50 @@ class CellKeeperCellHistoryCard extends PackCard {
     if (this.hass && (this._loadedRange !== this._range || (this._marks && this._data && !this._data.marks && !this._loading))) {
       this._load();
     }
-    if (changed.has("_data") || changed.has("_mode") || changed.has("_marks") || changed.has("_width")) this._draw();
+    if (this._view === "3d") {
+      // Rebuilt for a new range or on switching to 3D, not on the 5-minute refresh, which would
+      // turn the camera back.
+      const d = this._data;
+      if (d && (changed.has("_view") || (changed.has("_data") && this._shown3d !== d.range))) this._show3d();
+    } else if (["_data", "_mode", "_marks", "_width", "_view"].some((k) => changed.has(k))) {
+      this._draw();
+    }
+  }
+
+  async _show3d() {
+    const d = this._data;
+    this._shown3d = d.range;
+    if (!d.cols) return;
+    if (!customElements.get("plotly-graph")) {
+      this._status3d = "The 3D view needs Plotly Graph Card. Install it from HACS (search for plotly), then reload.";
+      return;
+    }
+    this._status3d = "Drawing…";
+    const helpers = await window.loadCardHelpers();
+    if (this._view !== "3d" || this._data !== d) return;
+    const card = helpers.createCardElement(surfaceConfig(d, d.range, this._config.height_3d));
+    card.hass = this.hass;
+    this.renderRoot.querySelector(".surface")?.replaceChildren(card);
+    this._status3d = undefined;
+  }
+
+  _setView(view) {
+    this._view = view;
+    this._hover = undefined;
+    remember({ view });
+  }
+
+  _surface() {
+    const d = this._data;
+    const status =
+      this._error ? `Couldn't load the cell statistics: ${this._error}`
+      : !d ? "Loading…"
+      : !d.cols ? "No statistics for these cells in this range yet."
+      : this._status3d;
+    return html`<div class="body3d" style="min-height:${this._config.height_3d}px">
+      <div class="surface ${status || this._loading ? "stale" : ""}"></div>
+      ${status ? html`<div class="msg">${status}</div>` : ""}
+    </div>`;
   }
 
   // Colour scale for the current mode: { lut, lo, hi, value(row, col) }.
@@ -332,6 +382,12 @@ class CellKeeperCellHistoryCard extends PackCard {
             </div>
             <span class="spacer"></span>
             <div class="seg">
+              ${[["2d", "2D"], ["3d", "3D"]].map(
+                ([v, name]) => html`<button class=${v === this._view ? "on" : ""} @click=${() => this._setView(v)}>${name}</button>`
+              )}
+            </div>
+            ${this._view === "2d"
+              ? html`<div class="seg">
               ${[["voltage", "Voltage"], ["deviation", "From average"]].map(
                 ([m, name]) => html`<button class=${m === this._mode ? "on" : ""} @click=${() => this._setMode(m)}>${name}</button>`
               )}
@@ -340,7 +396,8 @@ class CellKeeperCellHistoryCard extends PackCard {
               ? html`<div class="seg">
                   <button class=${this._marks ? "on" : ""} @click=${() => this._toggleMarks()}>Balancing</button>
                 </div>`
-              : ""}
+              : ""}`
+              : html`<span class="dim hint">drag to turn</span>`}
             <div class="seg">
               ${Object.entries(RANGES).map(
                 ([r, { label: name }]) =>
@@ -348,7 +405,9 @@ class CellKeeperCellHistoryCard extends PackCard {
               )}
             </div>
           </div>
-          <div class="plot">
+          ${this._view === "3d"
+            ? this._surface()
+            : html`          <div class="plot">
             <div class="yaxis" style="height:${height}px">
               ${(d?.cells ?? []).map((c, i) =>
                 c.n === 1 || c.n % tickEvery === 0
@@ -416,7 +475,7 @@ class CellKeeperCellHistoryCard extends PackCard {
             ${this._marks && d?.marks?.some((m) => m === 2)
               ? html`<span><i class="sw" style="background:${BALANCE_ACTIVE}"></i>Discharging</span>`
               : ""}
-          </div>
+          </div>`}
         </div>
       </ha-card>
     `;
@@ -590,6 +649,21 @@ class CellKeeperCellHistoryCard extends PackCard {
         width: 120px;
         height: 10px;
         border-radius: 2px;
+      }
+      .hint {
+        font-size: 12px;
+      }
+      .body3d {
+        position: relative;
+      }
+      /* Plotly Graph Card brings its own ha-card; flatten it into this one. */
+      .surface {
+        --ha-card-box-shadow: none;
+        --ha-card-border-width: 0;
+        transition: opacity 0.2s;
+      }
+      .surface.stale {
+        opacity: 0.4;
       }
       .sw {
         width: 10px;
