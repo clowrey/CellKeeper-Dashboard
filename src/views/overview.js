@@ -163,7 +163,7 @@ export function overviewView(ctx, options) {
       {
         column_span: 2,
         cards: [
-          statCard(ctx, "temperature", "module_temperature_max", "detail"),
+          statCard(ctx, "temperature", "module_temperature_max"),
           statCard(ctx, "energy", "energy_daily_charge"),
           statCard(ctx, "isolation", "isolation_resistance", "configuration"),
           statCard(ctx, "inverter", "inverter_can_soc"),

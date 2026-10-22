@@ -27,6 +27,15 @@ const BOARD_TEMPS = [
 // An open (unfitted) NTC reads far below anything real.
 const NO_SENSOR_C = -40;
 
+// The pack's voltages as the BMS measures them, for the BMS card.
+const PACK_VOLTAGES = [
+  { key: "pack_internal_voltage", name: "Pack (measured)" },
+  { key: "pack_internal_voltage_bmb", name: "Sum of the cells" },
+  { key: "pack_output_voltage", name: "Output" },
+  { key: "contactor_voltage_positive", name: "Across + contactor" },
+  { key: "contactor_voltage_negative", name: "Across − contactor" },
+];
+
 const STALE_S = 30; // a BMS reading older than this means the HMI has lost the BMS
 
 function ageText(s) {
@@ -66,6 +75,8 @@ class CellKeeperSystemCard extends PackCard {
     return {
       link: ["millis", "uptime_pico", "uptime_hmi", "system_state_text", "wifi_rssi"],
       bms: ["serial", "board_revision", "board_strap_counts", "uptime_pico", "system_state_text", "bms_firmware",
+        "system_state", "system_request", "system_request_text", "contactor_state", "contactor_state_text",
+        ...PACK_VOLTAGES.map((v) => v.key),
         ...RAILS.map((r) => r.key), ...BOARD_TEMPS.map((t) => t.key)],
       hmi: ["uptime_hmi", "hmi_firmware", "internal_temperature", "heap_free", "heap_max_block", "loop_time", "wifi_ssid", "wifi_ip", "wifi_rssi", "bssid", "light:display_backlight", "button:hmi_restart"],
     }[this._config.kind];
@@ -178,6 +189,11 @@ class CellKeeperSystemCard extends PackCard {
             <div class="dname">BMS controller</div>
             <div class="dsub">${["CellKeeper", rev && `board ${rev}`].filter(Boolean).join(" · ")}</div>
           </div>
+          ${this.device?.id
+            ? html`<a class="act right" href="/config/devices/device/${this.device.id}" title="Every sensor of this pack in Home Assistant"
+                ><ha-icon icon="mdi:format-list-bulleted"></ha-icon>All sensors</a
+              >`
+            : ""}
         </div>
         <div class="facts">
           ${up !== undefined
@@ -197,6 +213,8 @@ class CellKeeperSystemCard extends PackCard {
               </div>`
             : ""}
         </div>
+        ${this._state()}
+        ${this._packVoltages()}
         ${rails.length
           ? html`<div class="label sect">Supply rails</div>
               ${rails.map((r) => this._rail(r))}
@@ -205,6 +223,36 @@ class CellKeeperSystemCard extends PackCard {
         ${this._boardTemps()}
       </div>
     `;
+  }
+
+  // System and contactor state as text with the BMS's numeric code, and any pending request.
+  _state() {
+    const row = (label, textKey, codeKey) => {
+      const text = this.str(textKey);
+      const code = this.num(codeKey);
+      if (text === undefined && code === undefined) return "";
+      return html`<div class="clickable" @click=${() => this.moreInfo(textKey)}>
+        <span>${label}</span><b>${text ?? "–"}</b>${code !== undefined ? html`<i class="dim">code ${fmt(this.hass, code, 0)}</i>` : ""}
+      </div>`;
+    };
+    const request = this.str("system_request_text");
+    const out = [row("State", "system_state_text", "system_state"), row("Contactors", "contactor_state_text", "contactor_state")];
+    if (request || this.num("system_request") !== undefined) out.push(row("Request", "system_request_text", "system_request"));
+    return out.some((r) => r) ? html`<div class="facts">${out}</div>` : "";
+  }
+
+  // The pack voltages the BMS measures, in V whatever unit the sensors show.
+  _packVoltages() {
+    const rows = PACK_VOLTAGES.map((v) => ({ ...v, value: this.numIn(v.key, "V") })).filter((v) => this.has(v.key));
+    if (!rows.length) return "";
+    return html`<div class="label sect">Pack voltages</div>
+      <div class="kv">
+        ${rows.map(
+          (v) => html`<div class="clickable" @click=${() => this.moreInfo(v.key)}>
+            <span>${v.name}</span><b class="num">${fmt(this.hass, v.value, v.value !== undefined && Math.abs(v.value) < 10 ? 3 : 1)} V</b>
+          </div>`
+        )}
+      </div>`;
   }
 
   // Controller chip and current shunt temperatures, where the HMI reports them.
@@ -289,7 +337,6 @@ class CellKeeperSystemCard extends PackCard {
         </div>
         <div class="actions">
           ${url ? html`<a class="act" href=${url} target="_blank" rel="noreferrer"><ha-icon icon="mdi:open-in-new"></ha-icon>Web page</a>` : ""}
-          ${d?.id ? html`<a class="act" href="/config/devices/device/${d.id}"><ha-icon icon="mdi:devices"></ha-icon>Device</a>` : ""}
           ${this.has("button:hmi_restart")
             ? html`<button class="act ${this._armed ? "armed" : ""}" @click=${() => this._press()}>
                 <ha-icon icon="mdi:restart"></ha-icon>${this._armed ? "Tap again to restart" : "Restart"}
@@ -515,7 +562,7 @@ class CellKeeperSystemCard extends PackCard {
         padding: 4px 6px;
       }
       .facts span {
-        width: 4.5em;
+        width: 5.5em;
         flex: none;
         color: var(--ck-muted);
       }
@@ -579,6 +626,26 @@ class CellKeeperSystemCard extends PackCard {
         grid-column: 1 / -1;
         font-size: 12px;
         color: var(--ck-warn);
+      }
+      .act.right {
+        margin-left: auto;
+        align-self: flex-start;
+      }
+      .kv {
+        margin: 0 -6px;
+        font-size: 13px;
+      }
+      .kv > div {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 4px 6px;
+      }
+      .kv span {
+        color: var(--ck-muted);
+      }
+      .kv b {
+        font-weight: 500;
       }
       .actions {
         display: flex;

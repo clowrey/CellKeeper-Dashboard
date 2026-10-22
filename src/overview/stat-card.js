@@ -5,7 +5,7 @@ import { define } from "../context.js";
 // custom:cellkeeper-stat-card
 //   prefix: ck0
 //   kind: temperature | energy | isolation | inverter
-//   navigate: detail      optional view path for the card's header link
+//   navigate: configuration   optional view path for the card's header link
 //
 // The Overview's small cards, one per kind: a headline number and the few readings that
 // explain it, with a mini chart where it helps.

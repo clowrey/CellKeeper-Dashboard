@@ -1,6 +1,5 @@
 import { DEFAULT_PREFIX, PackContext } from "./context.js";
 import { overviewView } from "./views/overview.js";
-import { detailView } from "./views/detail.js";
 import { cellsView, cells3dView, cells2dView } from "./views/cells.js";
 import { configurationView } from "./views/configuration.js";
 import { systemView } from "./views/system.js";
@@ -11,7 +10,6 @@ import { noteView } from "./views/note.js";
 // View key -> generator(ctx, options, plotly). Keys are what `hide_views` takes.
 export const VIEWS = {
   overview: (ctx, options) => overviewView(ctx, options),
-  detail: (ctx, options) => detailView(ctx, options),
   cells: (ctx, _o, plotly) => cellsView(ctx, plotly),
   cells_3d: (ctx, _o, plotly) => (ctx.cellIds("cell_voltage").length ? cells3dView(ctx, plotly) : null),
   cells_2d: (ctx, _o, plotly) => (ctx.cellIds("cell_voltage").length ? cells2dView(ctx, plotly) : null),

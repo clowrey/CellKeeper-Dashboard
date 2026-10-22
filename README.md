@@ -14,7 +14,7 @@ strategy:
 
 ![Overview of a 96s NMC pack discharging: battery gauge at 99.7 %, power flow against the charge and discharge limits, 24 h chart, cell voltages with balancing, temperature, energy, isolation and inverter cards](https://raw.githubusercontent.com/clowrey/CellKeeper-Dashboard/main/docs/overview-ck0.webp)
 
-Views: **Overview** (below), **Detail**, **Cells** (live cell voltages and balancing), **Cells 3D** /
+Views: **Overview** (below), **Cells** (live cell voltages and balancing), **Cells 3D** /
 **Cells 2D** (24 h cell voltage history), **Configuration** (all BMS settings), **System**, **Log**,
 **Event** (every event type, coloured by state) and **Note**.
 
@@ -44,15 +44,6 @@ The same page for a 108s LFP pack, idle and floating between balance charges:
 
 ![Overview of a 108s LFP pack: idle at 99.2 %, charge limited by cell voltage, a floating balance charge scheduled, 12 mV cell spread](https://raw.githubusercontent.com/clowrey/CellKeeper-Dashboard/main/docs/overview-ck1.webp)
 
-### The Detail view
-
-Every sensor the pack's HMI publishes, in groups: state of charge, pack voltages, current &
-power, energy today, cells, balancing, module temperatures, current limits, inverter (CAN),
-isolation, state, BMS board, board temperatures and HMI, with the raw temperature registers
-last. A group keeps all its sensors even when another view shows some of them too. Sensors from
-newer firmware go into the group their name fits, or *Other sensors*, so nothing new is hidden.
-Per-cell voltages and balancing times, log lines and events stay on their own views.
-
 ### The Configuration view
 
 Every BMS setting, grouped by what it controls, each with a line on what it does, and a picture
@@ -65,8 +56,8 @@ of what the group does to the pack right now:
   the balancing thresholds, and the pack voltages they give the inverter.
 - **Current limits**: every limit that goes into the charge and discharge current, with the one in
   force highlighted, next to your max current settings.
-- **State of charge**: how SOC scaling maps the BMS's SOC onto what the inverter sees, and Set SOC
-  (asks twice).
+- **State of charge**: how SOC scaling maps the BMS's SOC onto what the inverter sees, the
+  voltage-based and coulomb-count estimates and the charge counter, and Set SOC (asks twice).
 - **Balancing**: the firmware's conditions as a checklist, so you can see why it is or isn't
   balancing.
 - **Balance charge** (HMI firmware with it): the schedule on a 24 h strip and the float and
@@ -98,12 +89,13 @@ rebuilds `src/events/catalog.js` from that table and the HMI's `bms_core.yaml`.
 - **Link**: BMS → HMI → Home Assistant, with how fresh the BMS's data is and the Wi-Fi signal, so
   a dead link shows where it broke.
 - **BMS controller**: firmware build (commit and build time, flagged when built from uncommitted
-  changes), board revision, serial and uptime, each supply rail (3.3 V, 5 V, 12 V,
+  changes), board revision, serial and uptime, system and contactor state with their codes, the
+  pack voltages (measured, sum of the cells, output, across each contactor), each supply rail (3.3 V, 5 V, 12 V,
   contactor supply) on a bar against the range the firmware accepts, and the controller chip and
   current shunt temperatures.
 - **HMI display**: model, firmware build, Wi-Fi network and signal quality, CPU temperature, free
-  memory and loop time, the backlight, and buttons to open its web page or Home Assistant device
-  page and to restart it (tap twice).
+  memory and loop time, the backlight, and buttons to open its web page and to restart it (tap twice). **All sensors** opens the pack's device page in Home
+  Assistant, which lists every sensor the HMI publishes.
 
   The firmware builds come from the HMI's BMS Firmware and HMI Firmware sensors (CellKeeper-BMS-LCD
   with BMS firmware that reports its build ID, registers 68/69); with older firmware the card says
@@ -190,11 +182,10 @@ The icon paths in `src/icons.js` are generated from the logo outline in
 | `title` | `BMS Dashboard` | Dashboard title. |
 | `pack_name` | the HMI device's name | Name shown on the Overview's pack card. |
 | `overview` | | `classic` for the original gauge Overview instead. |
-| `detail` | | `classic` for the original Detail view instead. |
 | `configuration` | | `classic` for the original tile Configuration view instead. |
 | `events` | | `classic` for the original tile Event view instead. |
 | `system` | | `classic` for the original entities System view instead. |
-| `hide_views` | `[]` | Views to leave out: `overview`, `detail`, `cells`, `cells_3d`, `cells_2d`, `configuration`, `system`, `log`, `event`, `note`. |
+| `hide_views` | `[]` | Views to leave out: `overview`, `cells`, `cells_3d`, `cells_2d`, `configuration`, `system`, `log`, `event`, `note`. |
 | `gauges` | | Change the classic Overview's gauges, keyed by `soc`, `pack_voltage`, `cell_voltage_min`, `cell_voltage_max`, `current`, `power`. Each takes [gauge card](https://www.home-assistant.io/dashboards/gauge/) options (`min`, `max`, `segments`, `severity`, `name`, …) that replace the defaults. |
 
 The classic Overview's default gauge ranges suit a 96s NMC pack. For example, for a 16s LFP pack:

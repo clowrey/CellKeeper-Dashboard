@@ -314,6 +314,9 @@ export function configurationView(ctx, options = {}) {
       needs_unlock: true,
       visual: "soc",
       rows: [
+        { key: "sensor:soc_voltage_based", name: "Voltage-based estimate", help: "From the cells' open-circuit voltage.", digits: 1 },
+        { key: "sensor:soc_basic_count", name: "Coulomb-count estimate", help: "Counted down from the last full charge.", digits: 1 },
+        { key: "sensor:charge_raw", name: "Charge counter", help: "The current sensor's running charge total.", digits: 2 },
         { key: "number:soc_scaling_min", name: "Inverter 0 % at", help: "The BMS SOC the inverter is told is 0 %." },
         { key: "number:soc_scaling_max", name: "Inverter 100 % at", help: "The BMS SOC the inverter is told is 100 %." },
         {
