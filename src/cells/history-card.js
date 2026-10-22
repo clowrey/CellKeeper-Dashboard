@@ -1,7 +1,7 @@
 import { html, css, nothing } from "lit";
 import { PackCard, baseStyles, fmt } from "../overview/base.js";
 import { define } from "../context.js";
-import { surfaceConfig } from "./surface.js";
+import { Surface3D } from "./surface.js";
 import {
   RANGES, REFRESH_MS, VOLTAGE_STOPS, balanceMarks, colorTable, columnStats, fetchBalancing, fetchCellHistory, packCells,
   percentile,
@@ -12,8 +12,8 @@ import {
 //   range: 24h        6h, 24h, 7d or 30d to start with (the last one picked is remembered)
 //   mode: voltage     voltage, or deviation: each cell against the pack's average at the time
 //   balancing: false  mark balancing cells to start with
-//   view: 2d          2d, or 3d: a surface drawn by Plotly Graph Card (needs it installed)
-//   height_3d: 700    height of the 3D plot in px
+//   view: 2d          2d, or 3d: the same data as a surface you can turn
+//   height_3d: 560    height of the 3D view in px
 //
 // Every cell's voltage over time as a heatmap drawn on a canvas from one statistics request,
 // balancing cells optionally marked, the spread between the highest and lowest cell underneath, and a
@@ -40,6 +40,29 @@ function remember(values) {
   } catch {
     // Storage blocked: the choice lasts until the page reloads.
   }
+}
+
+// Round tick values between lo and hi, about n of them: { ticks, digits } (decimals they need).
+function niceTicks(lo, hi, n = 5) {
+  const raw = (hi - lo) / n || 1;
+  const pow = 10 ** Math.floor(Math.log10(raw));
+  const f = raw / pow;
+  const step = (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * pow;
+  const ticks = [];
+  for (let v = Math.ceil(lo / step) * step; v <= hi + step * 1e-6; v += step) ticks.push(Math.round(v / step) * step);
+  return { ticks, digits: Math.max(0, -Math.floor(Math.log10(step) + 1e-9)) };
+}
+
+// A CSS colour as [r, g, b] 0..1, via the canvas's own colour parsing.
+function rgbOf(color) {
+  const g = document.createElement("canvas").getContext("2d");
+  g.fillStyle = "#808080";
+  g.fillStyle = color || "#808080";
+  const c = g.fillStyle;
+  const nums = c.startsWith("#")
+    ? [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16))
+    : c.match(/[\d.]+/g).slice(0, 3).map(Number);
+  return nums.map((v) => v / 255);
 }
 
 // Time axis ticks on whole hours or local midnights.
@@ -73,7 +96,7 @@ class CellKeeperCellHistoryCard extends PackCard {
   };
 
   setConfig(config) {
-    super.setConfig({ range: "24h", mode: "voltage", balancing: false, view: "2d", height_3d: 700, ...config });
+    super.setConfig({ range: "24h", mode: "voltage", balancing: false, view: "2d", height_3d: 560, ...config });
     const saved = remembered();
     this._range = RANGES[saved.range] ? saved.range : RANGES[this._config.range] ? this._config.range : "24h";
     this._mode = ["voltage", "deviation"].includes(saved.mode) ? saved.mode : this._config.mode;
@@ -92,6 +115,8 @@ class CellKeeperCellHistoryCard extends PackCard {
     super.disconnectedCallback();
     clearInterval(this._timer);
     this._resize?.disconnect();
+    this._gl?.destroy();
+    this._gl = undefined;
   }
 
   // Balancing sensors this pack has: { entity id: mark level }.
@@ -132,7 +157,7 @@ class CellKeeperCellHistoryCard extends PackCard {
   }
 
   updated(changed) {
-    const area = this.renderRoot.querySelector(".area");
+    const area = this.renderRoot.querySelector(".area, .body3d");
     if (area && area !== this._observed) {
       this._resize.observe(area);
       this._observed = area;
@@ -140,31 +165,93 @@ class CellKeeperCellHistoryCard extends PackCard {
     if (this.hass && (this._loadedRange !== this._range || (this._marks && this._data && !this._data.marks && !this._loading))) {
       this._load();
     }
-    if (this._view === "3d") {
-      // Rebuilt for a new range or on switching to 3D, not on the 5-minute refresh, which would
-      // turn the camera back.
-      const d = this._data;
-      if (d && (changed.has("_view") || (changed.has("_data") && this._shown3d !== d.range))) this._show3d();
-    } else if (["_data", "_mode", "_marks", "_width", "_view"].some((k) => changed.has(k))) {
-      this._draw();
+    if (this._view === "3d") this._update3d(changed);
+    else {
+      if (this._gl) {
+        this._gl.destroy();
+        this._gl = undefined;
+      }
+      if (["_data", "_mode", "_marks", "_width", "_view"].some((k) => changed.has(k))) this._draw();
     }
   }
 
-  async _show3d() {
-    const d = this._data;
-    this._shown3d = d.range;
-    if (!d.cols) return;
-    if (!customElements.get("plotly-graph")) {
-      this._status3d = "The 3D view needs Plotly Graph Card. Install it from HACS (search for plotly), then reload.";
-      return;
+  // Create the 3D view for a new canvas, and give it new data, colours or size. The camera stays
+  // where the viewer turned it through the 5-minute refresh and range changes.
+  _update3d(changed) {
+    const canvas = this.renderRoot.querySelector("canvas.gl");
+    if (!canvas) return;
+    let fresh = false;
+    if (this._gl?.canvas !== canvas) {
+      this._gl?.destroy();
+      try {
+        this._gl = new Surface3D(canvas, this.renderRoot.querySelector(".labels"), {
+          onHover: (hover) => (this._hover = hover),
+          onClick: ({ row }) => this.moreInfo(this._data.cells[row].id),
+        });
+        this._status3d = undefined;
+      } catch (err) {
+        this._gl = undefined;
+        this._status3d = err?.message ?? String(err);
+        return;
+      }
+      fresh = true;
     }
-    this._status3d = "Drawing…";
-    const helpers = await window.loadCardHelpers();
-    if (this._view !== "3d" || this._data !== d) return;
-    const card = helpers.createCardElement(surfaceConfig(d, d.range, this._config.height_3d));
-    card.hass = this.hass;
-    this.renderRoot.querySelector(".surface")?.replaceChildren(card);
-    this._status3d = undefined;
+    if (fresh || changed.has("_width")) this._gl.setSize(canvas.clientWidth, canvas.clientHeight);
+    if ((fresh || changed.has("_data") || changed.has("_mode")) && this._data?.cols > 1) {
+      this._gl.ink = rgbOf(getComputedStyle(this).getPropertyValue("--primary-text-color").trim());
+      this._gl.setData(this._grid3d());
+      this.requestUpdate();
+    }
+  }
+
+  // What the 3D view draws: the current colouring, and height in the same units.
+  _grid3d() {
+    const d = this._data;
+    const scale = (this._scaleNow = this._scale());
+    const rows = d.cells.length;
+    const deviation = this._mode === "deviation";
+    let zLo = Infinity;
+    let zHi = -Infinity;
+    for (let r = 0; r < rows; r++) {
+      for (let k = 0; k < d.cols; k++) {
+        const v = scale.value(r, k);
+        if (v < zLo) zLo = v;
+        if (v > zHi) zHi = v;
+      }
+    }
+    if (deviation) zHi = -(zLo = -Math.max(Math.abs(zLo), Math.abs(zHi), 0.001));
+    if (!(zHi > zLo)) zHi = zLo + 0.001;
+    const { ticks, digits } = niceTicks(deviation ? zLo * 1000 : zLo, deviation ? zHi * 1000 : zHi, 4);
+    const hours = RANGES[d.range].hours;
+    const locale = this.hass.locale?.language ?? navigator.language;
+    const span = (d.cols - 1) * d.step;
+    const tickEvery = rows > 60 ? 12 : rows > 24 ? 8 : 4;
+    return {
+      cols: d.cols,
+      rows,
+      value: scale.value,
+      lut: scale.lut,
+      lo: scale.lo,
+      hi: scale.hi,
+      zLo,
+      zHi,
+      xTicks: timeTicks(d.t0, d.t0 + span, hours).map((t) => ({
+        at: (t - d.t0) / span,
+        text: new Date(t).toLocaleString(
+          locale,
+          hours > 24 ? { day: "numeric", month: "short" } : { hour: "2-digit", minute: "2-digit" }
+        ),
+      })),
+      yTicks: d.cells
+        .map((c, i) => ({ c, at: rows > 1 ? i / (rows - 1) : 0 }))
+        .filter(({ c }) => c.n === 1 || c.n % tickEvery === 0)
+        .map(({ c, at }) => ({ at, text: String(c.n) })),
+      zTicks: ticks.map((v) => ({
+        v: deviation ? v / 1000 : v,
+        text: deviation ? `${v > 0 ? "+" : ""}${fmt(this.hass, v, digits)}` : fmt(this.hass, v, digits),
+      })),
+      titles: { x: "Time", y: "Cell", z: deviation ? "mV from average" : "V" },
+    };
   }
 
   _setView(view) {
@@ -175,15 +262,35 @@ class CellKeeperCellHistoryCard extends PackCard {
 
   _surface() {
     const d = this._data;
-    const status =
-      this._error ? `Couldn't load the cell statistics: ${this._error}`
-      : !d ? "Loading…"
-      : !d.cols ? "No statistics for these cells in this range yet."
-      : this._status3d;
-    return html`<div class="body3d" style="min-height:${this._config.height_3d}px">
-      <div class="surface ${status || this._loading ? "stale" : ""}"></div>
-      ${status ? html`<div class="msg">${status}</div>` : ""}
-    </div>`;
+    const status = this._error
+      ? `Couldn't load the cell statistics: ${this._error}`
+      : !d
+        ? "Loading…"
+        : d.cols < 2
+          ? "No statistics for these cells in this range yet."
+          : this._status3d;
+    return html`<div class="body3d ${this._loading && d ? "stale" : ""}">
+        <canvas class="gl" style="height:${this._config.height_3d}px"></canvas>
+        <div class="labels"></div>
+        ${this._tip()} ${status ? html`<div class="msg">${status}</div>` : ""}
+      </div>
+      <div class="foot">
+        ${this._ramp()}
+        <span class="dim">Drag to turn · scroll or pinch to zoom · double-click to reset</span>
+      </div>`;
+  }
+
+  // Colour bar for the current scale.
+  _ramp() {
+    const scale = this._data?.cols ? this._scaleNow : undefined;
+    if (!scale) return "";
+    const deviation = this._mode === "deviation";
+    const label = (v) => (deviation ? `${v > 0 ? "+" : ""}${fmt(this.hass, v * 1000, 0)}` : fmt(this.hass, v, 3));
+    return html`<span class="bar">
+      <span class="num">${label(scale.lo)}</span>
+      <i class="ramp" style="background:linear-gradient(to right, ${scale.stops.join(",")})"></i>
+      <span class="num">${label(scale.hi)} ${deviation ? "mV" : "V"}</span>
+    </span>`;
   }
 
   // Colour scale for the current mode: { lut, lo, hi, value(row, col) }.
@@ -339,7 +446,13 @@ class CellKeeperCellHistoryCard extends PackCard {
     const v = cell ? d.z[hv.row][hv.k] : NaN;
     const mark = cell && this._marks && d.marks ? d.marks[hv.row * d.cols + hv.k] : 0;
     const right = hv.k > d.cols * 0.6;
-    return html`<div class="tip" style="left:${((hv.k + 0.5) / d.cols) * 100}%;${right ? "transform:translateX(-100%)" : ""}">
+    const at =
+      hv.x !== undefined
+        ? `left:${hv.x}px;top:${hv.y}px;margin:0;transform:translate(${
+            hv.x > (this._width ?? 0) * 0.6 ? "calc(-100% - 16px)" : "16px"
+          }, -50%)`
+        : `left:${((hv.k + 0.5) / d.cols) * 100}%;${right ? "transform:translateX(-100%)" : ""}`;
+    return html`<div class="tip" style=${at}>
       <div class="dim">${this._when(t)} – ${this._when(t + d.step)}</div>
       ${cell
         ? html`<b>Cell ${cell.n}</b>
@@ -364,13 +477,10 @@ class CellKeeperCellHistoryCard extends PackCard {
     const d = this._data;
     const rows = d?.cells.length ?? packCells(this.hass, this.prefix).length;
     const height = Math.min(720, Math.max(240, rows * 6));
-    const scale = d?.cols ? this._scaleNow : undefined;
     const hours = RANGES[this._range].hours;
     const t1 = d ? d.t0 + d.cols * d.step : 0;
     const tickEvery = rows > 60 ? 12 : rows > 24 ? 8 : 4;
     const hv = this._hover;
-    const units = this._mode === "deviation" ? "mV" : "V";
-    const label = (v) => (this._mode === "deviation" ? `${v > 0 ? "+" : ""}${fmt(this.hass, v * 1000, 0)}` : fmt(this.hass, v, 3));
 
     return html`
       <ha-card>
@@ -386,18 +496,16 @@ class CellKeeperCellHistoryCard extends PackCard {
                 ([v, name]) => html`<button class=${v === this._view ? "on" : ""} @click=${() => this._setView(v)}>${name}</button>`
               )}
             </div>
-            ${this._view === "2d"
-              ? html`<div class="seg">
+            <div class="seg">
               ${[["voltage", "Voltage"], ["deviation", "From average"]].map(
                 ([m, name]) => html`<button class=${m === this._mode ? "on" : ""} @click=${() => this._setMode(m)}>${name}</button>`
               )}
             </div>
-            ${Object.keys(this._balancing()).length
+            ${this._view === "2d" && Object.keys(this._balancing()).length
               ? html`<div class="seg">
                   <button class=${this._marks ? "on" : ""} @click=${() => this._toggleMarks()}>Balancing</button>
                 </div>`
-              : ""}`
-              : html`<span class="dim hint">drag to turn</span>`}
+              : ""}
             <div class="seg">
               ${Object.entries(RANGES).map(
                 ([r, { label: name }]) =>
@@ -462,13 +570,7 @@ class CellKeeperCellHistoryCard extends PackCard {
             </div>
           </div>
           <div class="foot">
-            ${scale
-              ? html`<span class="bar">
-                  <span class="num">${label(scale.lo)}</span>
-                  <i class="ramp" style="background:linear-gradient(to right, ${scale.stops.join(",")})"></i>
-                  <span class="num">${label(scale.hi)} ${units}</span>
-                </span>`
-              : ""}
+            ${this._ramp()}
             ${this._marks && d?.marks?.some((m) => m === 1)
               ? html`<span><i class="sw" style="background:${BALANCE}"></i>Balancing</span>`
               : ""}
@@ -650,20 +752,39 @@ class CellKeeperCellHistoryCard extends PackCard {
         height: 10px;
         border-radius: 2px;
       }
-      .hint {
-        font-size: 12px;
-      }
       .body3d {
         position: relative;
-      }
-      /* Plotly Graph Card brings its own ha-card; flatten it into this one. */
-      .surface {
-        --ha-card-box-shadow: none;
-        --ha-card-border-width: 0;
+        overflow: hidden;
         transition: opacity 0.2s;
       }
-      .surface.stale {
-        opacity: 0.4;
+      .body3d.stale {
+        opacity: 0.5;
+      }
+      canvas.gl {
+        cursor: grab;
+        touch-action: none;
+      }
+      canvas.gl:active {
+        cursor: grabbing;
+      }
+      .labels {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        font-size: 10px;
+        color: var(--ck-muted);
+      }
+      .labels span {
+        position: absolute;
+        left: 0;
+        top: 0;
+        white-space: nowrap;
+        text-shadow: 0 0 3px var(--card-background-color, #fff), 0 0 2px var(--card-background-color, #fff);
+      }
+      .labels span.title {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--primary-text-color);
       }
       .sw {
         width: 10px;

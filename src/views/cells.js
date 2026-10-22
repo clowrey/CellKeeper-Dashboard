@@ -1,5 +1,5 @@
-// Cell History: every cell's voltage over time, as a heatmap or (with Plotly Graph Card) a 3D
-// surface, from one statistics request.
+// Cell History: every cell's voltage over time, as a heatmap or a 3D surface, from one statistics
+// request.
 export function cellHistoryView(ctx) {
   return {
     title: "Cell History",

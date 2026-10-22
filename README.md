@@ -20,9 +20,10 @@ Views: **Overview** (below), **Cell History**, **Configuration** (all BMS settin
 **Cell History** is a heatmap of every cell over 6 h, 24 h, 7 d or 30 d, either as voltage or as
 each cell's difference from the pack average at the time, with the spread between the highest and
 lowest cell underneath, balancing cells marked on request, and a readout of the cell and time under
-the pointer. Its **3D** button shows the same data as a surface you can turn. It reads Home
+the pointer. Its **3D** button shows the same data, in the same colouring, as a lit surface you
+can turn and zoom, with a crosshair and the same readout following the pointer. It reads Home
 Assistant's 5-minute and hourly statistics for all cells in one request instead of every cell's raw
-history, so 24 h opens in about a second (3D takes a few more to draw).
+history, so 24 h opens in about a second, in 2D or 3D.
 
 ### The Overview
 
@@ -125,8 +126,6 @@ If your device already has another name, either use that name as the prefix or r
    type **Dashboard**.
 2. Search HACS for **CellKeeper Dashboard** and **Download** it. HACS adds the dashboard resource
    for you; reload the browser when it asks.
-3. Also download **Plotly Graph Card** from HACS, which the Cell History 3D view needs (see
-   [Dependencies](#dependencies)).
 
 HACS will offer updates when a new release is published.
 
@@ -226,12 +225,10 @@ strategy:
 ## Dependencies
 
 - **Home Assistant 2025.1** or newer (sections views, tile card features).
-- **[Plotly Graph Card](https://github.com/dbuezas/lovelace-plotly-graph-card)** (HACS) for the
-  Cell History's 3D view. Without it the 3D button shows a note asking you to install it; the rest
-  of the dashboard works.
 
-Nothing else. The colour-by-state tiles, event lists and styling that used to need card-mod,
-auto-entities, mushroom and decluttering-card are built into this plugin.
+Nothing else. The colour-by-state tiles, event lists, styling and charts that used to need card-mod,
+auto-entities, mushroom, decluttering-card and Plotly Graph Card are built into this plugin; the 3D
+view draws with the browser's WebGL.
 
 ### Helper cards
 
