@@ -107,7 +107,12 @@ class CellKeeperCellHistoryCard extends PackCard {
   connectedCallback() {
     super.connectedCallback();
     this._timer = setInterval(() => this._load(), REFRESH_MS);
-    this._resize = new ResizeObserver(([entry]) => (this._width = Math.round(entry.contentRect.width)));
+    // Only the plot area now shown counts: the one a 2D/3D switch just removed reports width 0.
+    this._resize = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.target === this._observed && entry.contentRect.width > 0) this._width = Math.round(entry.contentRect.width);
+      }
+    });
     this._observed = undefined;
   }
 
@@ -159,6 +164,7 @@ class CellKeeperCellHistoryCard extends PackCard {
   updated(changed) {
     const area = this.renderRoot.querySelector(".area, .body3d");
     if (area && area !== this._observed) {
+      if (this._observed) this._resize.unobserve(this._observed);
       this._resize.observe(area);
       this._observed = area;
     }
