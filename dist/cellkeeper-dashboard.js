@@ -933,7 +933,7 @@ var ds=Object.defineProperty;var hs=(s,e,t)=>e in s?ds(s,e,{enumerable:!0,config
       .row span:first-child {
         color: var(--ck-muted);
       }
-    `]);S("cellkeeper-stat-card",De);var wi=s=>(...e)=>({_$litDirective$:s,values:e}),He=class{constructor(e){}get _$AU(){return this._$AM._$AU}_$AT(e,t,i){this._$Ct=e,this._$AM=t,this._$Ci=i}_$AS(e,t){return this.update(e,t)}update(e,t){return this.render(...t)}};var{I:Fa}=li;var Rs={},ki=(s,e=Rs)=>s._$AH=e;var $i=wi(class extends He{constructor(){super(...arguments),this.key=C}render(s,e){return this.key=s,e}update(s,[e,t]){return e!==this.key&&(ki(s),this.key=e),t}});I();var oe=[0,0,.05],Vs={yaw:-1.3,pitch:.5,dist:2.5},Bs={yaw:-.38,pitch:.7,dist:4.7},Ps=`#version 300 es
+    `]);S("cellkeeper-stat-card",De);var wi=s=>(...e)=>({_$litDirective$:s,values:e}),He=class{constructor(e){}get _$AU(){return this._$AM._$AU}_$AT(e,t,i){this._$Ct=e,this._$AM=t,this._$Ci=i}_$AS(e,t){return this.update(e,t)}update(e,t){return this.render(...t)}};var{I:Fa}=li;var Rs={},ki=(s,e=Rs)=>s._$AH=e;var $i=wi(class extends He{constructor(){super(...arguments),this.key=C}render(s,e){return this.key=s,e}update(s,[e,t]){return e!==this.key&&(ki(s),this.key=e),t}});I();var oe=[0,0,.05],Vs={yaw:-.98,pitch:.74,dist:3.5},Bs={yaw:-.38,pitch:.7,dist:4.7},Ps=`#version 300 es
 in vec3 aPos;
 in vec3 aNormal;
 in vec3 aColor;

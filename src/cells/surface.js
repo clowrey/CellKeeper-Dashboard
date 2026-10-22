@@ -8,9 +8,10 @@ const AX = 1.1;
 const AY = 0.55;
 const AZ = 0.5;
 const TARGET = [0, 0, AZ * 0.1];
-// Where the camera starts. A wide view looks from the front (cell 1) a little from the right, so
-// time runs left to right; a tall one (a phone) looks down the time axis, the newest end nearest.
-const HOME_WIDE = { yaw: -1.3, pitch: 0.5, dist: 2.5 };
+// Where the camera starts. A wide view looks down from the front right corner, time running from
+// the far left to the near right and the cells up the right side; a tall one (a phone) looks down
+// the time axis, the newest end nearest.
+const HOME_WIDE = { yaw: -0.98, pitch: 0.74, dist: 3.5 };
 const HOME_TALL = { yaw: -0.38, pitch: 0.7, dist: 4.7 };
 
 const SURFACE_VS = `#version 300 es
