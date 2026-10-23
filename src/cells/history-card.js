@@ -307,11 +307,16 @@ class CellKeeperCellHistoryCard extends PackCard {
     return html`<div class="body3d ${this._loading && d ? "stale" : ""}">
         ${keyed(this._glKey ?? 0, html`<canvas class="gl" style="height:${this._plotHeight(this._config.height_3d, 360, AROUND_3D)}"></canvas>`)}
         <div class="labels"></div>
+        ${d?.cols > 1 && this._gl
+          ? html`<button class="reset" title="Back to the starting angle" @click=${() => this._gl?.reset()}>
+              <ha-icon icon="mdi:camera-retake-outline"></ha-icon>Reset view
+            </button>`
+          : ""}
         ${this._tip()} ${status ? html`<div class="msg">${status}</div>` : ""}
       </div>
       <div class="foot">
         ${this._ramp()}
-        <span class="dim">Drag to turn · scroll or pinch to zoom · double-click to reset</span>
+        <span class="dim">Drag to turn · scroll or pinch to zoom · double-click or Reset view to start over</span>
       </div>`;
   }
 
@@ -808,6 +813,29 @@ class CellKeeperCellHistoryCard extends PackCard {
       }
       canvas.gl:active {
         cursor: grabbing;
+      }
+      .reset {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        z-index: 1;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font: inherit;
+        font-size: 12px;
+        padding: 4px 10px 4px 8px;
+        border: 1px solid var(--ck-line);
+        border-radius: 8px;
+        background: var(--card-background-color, #fff);
+        color: var(--primary-text-color);
+        cursor: pointer;
+      }
+      .reset:hover {
+        border-color: var(--primary-color);
+      }
+      .reset ha-icon {
+        --mdc-icon-size: 16px;
       }
       .labels {
         position: absolute;
