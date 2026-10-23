@@ -59,6 +59,10 @@ check(
   "Cell History view: the history card at path cell-history",
   historyView?.path === "cell-history" && JSON.stringify(historyView).includes("custom:cellkeeper-cell-history-card")
 );
+check(
+  "System view: a dashboard card beside the HMI",
+  JSON.stringify(config.views.find((v) => v.title === "System")).includes('"kind":"dashboard"')
+);
 check("every entity id uses the prefix", [...referencedEntities(config)].every((id) => id.split(".")[1].startsWith(`${prefix}_`)));
 
 // Older firmware: no balance charge, no isolation, no module ID events.

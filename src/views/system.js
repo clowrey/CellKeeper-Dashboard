@@ -81,8 +81,8 @@ export function systemView(ctx, options = {}) {
     max_columns: 2,
     sections: [
       { column_span: 2, cards: [card("link")] },
-      hasBms ? { cards: [card("bms")] } : null,
-      hasHmi ? { cards: [card("hmi")] } : null,
+      hasBms ? { cards: [card("bms"), ...(hasHmi ? [] : [card("dashboard")])] } : null,
+      hasHmi ? { cards: [card("hmi"), card("dashboard")] } : null,
     ].filter(Boolean),
   };
 }

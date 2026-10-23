@@ -3,6 +3,7 @@ import { PackCard, baseStyles, fmt, fmtPower, fmtDuration } from "./base.js";
 import { fetchDay } from "./history.js";
 import { BATTERY } from "../icons.js";
 import { define } from "../context.js";
+import { dashboardUpdate } from "../update.js";
 import { EVENT_COLORS, PREVIOUS_COLOR } from "../cards/event-grid.js";
 
 // custom:cellkeeper-pack-card
@@ -57,6 +58,7 @@ class CellKeeperPackCard extends PackCard {
       "system_state_text", "contactor_state_text", "balance_charge_status", "current_limit_effective_charge",
       "current_limit_effective_discharge", ...CHARGE_LIMITS.map(([k]) => k), ...DISCHARGE_LIMITS.map(([k]) => k),
       ...this._eventIds(),
+      ...[dashboardUpdate(this.hass)?.entity_id].filter(Boolean),
     ];
   }
 
@@ -169,6 +171,7 @@ class CellKeeperPackCard extends PackCard {
     const cells = this.num("cell_count");
     const capacity = this.num("capacity");
     const balance = this.str("balance_charge_status");
+    const update = dashboardUpdate(this.hass);
     return html`
       <div class="header">
         <div class="title">
@@ -189,6 +192,12 @@ class CellKeeperPackCard extends PackCard {
                 @click=${() => this.moreInfo("contactor_state_text")}
                 ><ha-icon icon=${contactor === "CLOSED" ? "mdi:electric-switch-closed" : "mdi:electric-switch"}></ha-icon>Contactors
                 ${contactor.toLowerCase()}</span
+              >`
+            : ""}
+          ${update?.state === "on"
+            ? html`<span class="chip" style="--c:var(--ck-info)" title="A new version of this dashboard is out"
+                @click=${() => this.moreInfo(update.entity_id)}
+                ><ha-icon icon="mdi:arrow-up-circle-outline"></ha-icon>Dashboard ${update.attributes.latest_version}</span
               >`
             : ""}
           ${balance && balance !== "Off"

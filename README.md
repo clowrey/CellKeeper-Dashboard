@@ -33,7 +33,7 @@ One page that answers "is the pack OK, and what is it doing?":
 - **Pack card**: state of charge on the CellKeeper battery, filled to the level and with the logo's
   arrow running in or out while it charges or discharges; stored energy and the change over the
   last hour; system and contactor state; a banner for every active warning, critical or fatal
-  event.
+  event; and a chip when a new dashboard version is out.
 - **Power flow**: charging/discharging power with time to full or empty, current and pack and
   output voltage, and a centre-zero bar of the current against the charge and discharge limits
   the BMS is sending the inverter, naming the limit that is in force (temperature, cell voltage,
@@ -108,6 +108,8 @@ rebuilds `src/events/catalog.js` from that table and the HMI's `bms_core.yaml`.
   The firmware builds come from the HMI's BMS Firmware and HMI Firmware sensors (CellKeeper-BMS-LCD
   with BMS firmware that reports its build ID, registers 68/69); with older firmware the card says
   so.
+- **Dashboard**: this dashboard's version and, when it was installed through HACS, whether a newer
+  one is out, with an **Update** button (HACS installs it; then **Reload**) and the release notes.
 
 ## Naming your packs
 
@@ -128,7 +130,8 @@ If your device already has another name, either use that name as the prefix or r
 2. Search HACS for **CellKeeper Dashboard** and **Download** it. HACS adds the dashboard resource
    for you; reload the browser when it asks.
 
-HACS will offer updates when a new release is published.
+HACS will offer updates when a new release is published; the dashboard shows them too (a chip on
+the Overview, an **Update** button on the System view).
 
 ### Manually
 
@@ -249,7 +252,7 @@ dashboards:
 - `custom:cellkeeper-events-card`: the Event view's cards. Options: `prefix`, `mode` (`status`,
   `log`, `catalog`), `days` (log, default 10).
 - `custom:cellkeeper-system-card`: the System view's cards. Options: `prefix`, `kind` (`link`,
-  `bms`, `hmi`).
+  `bms`, `hmi`, `dashboard`).
 - `custom:cellkeeper-event-grid`: tiles for a pack's events that are active now
   (`show: active`) or have been active (`show: previous`); hidden when there are none.
   Options: `prefix`, `show`, `title`, `columns`.

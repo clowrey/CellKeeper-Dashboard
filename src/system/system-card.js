@@ -1,14 +1,16 @@
 import { html, css, nothing } from "lit";
 import { PackCard, baseStyles, fmt, fmtDuration } from "../overview/base.js";
 import { define } from "../context.js";
+import { RUNNING_VERSION, dashboardUpdate, sameVersion } from "../update.js";
 
 // custom:cellkeeper-system-card
 //   prefix: ck0
-//   kind: link | bms | hmi
+//   kind: link | bms | hmi | dashboard
 //
 // link: BMS -> HMI -> Home Assistant, and how fresh the data is at each hop.
 // bms:  the BMS board, its uptime, and its supply rails against the firmware's limits.
 // hmi:  the display: firmware, Wi-Fi, health, backlight, web page and restart.
+// dashboard: this dashboard's version and, when installed through HACS, its update.
 
 // Supply rails and their limits from the firmware (bms/config/limits.h), in volts.
 const RAILS = [
@@ -53,10 +55,12 @@ function rssiQuality(dbm) {
 }
 
 class CellKeeperSystemCard extends PackCard {
-  static properties = { ...PackCard.properties, _armed: { state: true }, _tick: { state: true } };
+  static properties = { ...PackCard.properties, _armed: { state: true }, _tick: { state: true }, _installing: { state: true } };
 
   setConfig(config) {
-    if (!["link", "bms", "hmi"].includes(config.kind)) throw new Error("cellkeeper-system-card: kind is link, bms or hmi");
+    if (!["link", "bms", "hmi", "dashboard"].includes(config.kind)) {
+      throw new Error("cellkeeper-system-card: kind is link, bms, hmi or dashboard");
+    }
     super.setConfig(config);
   }
 
@@ -78,6 +82,7 @@ class CellKeeperSystemCard extends PackCard {
         "system_state", "system_request", "system_request_text", "contactor_state", "contactor_state_text",
         ...PACK_VOLTAGES.map((v) => v.key),
         ...RAILS.map((r) => r.key), ...BOARD_TEMPS.map((t) => t.key)],
+      dashboard: [dashboardUpdate(this.hass)?.entity_id].filter(Boolean),
       hmi: ["uptime_hmi", "hmi_firmware", "internal_temperature", "heap_free", "heap_max_block", "loop_time", "wifi_ssid", "wifi_ip", "wifi_rssi", "bssid", "light:display_backlight", "button:hmi_restart"],
     }[this._config.kind];
   }
@@ -100,7 +105,12 @@ class CellKeeperSystemCard extends PackCard {
 
   render() {
     if (!this.hass || !this._config) return nothing;
-    const body = { link: () => this._link(), bms: () => this._bms(), hmi: () => this._hmi() }[this._config.kind]();
+    const body = {
+      link: () => this._link(),
+      bms: () => this._bms(),
+      hmi: () => this._hmi(),
+      dashboard: () => this._dashboard(),
+    }[this._config.kind]();
     return body ? html`<ha-card>${body}</ha-card>` : nothing;
   }
 
@@ -394,6 +404,74 @@ class CellKeeperSystemCard extends PackCard {
     `;
   }
 
+  // ---- dashboard ----
+
+  _dashboard() {
+    const up = dashboardUpdate(this.hass);
+    const a = up?.attributes ?? {};
+    const installed = a.installed_version;
+    const latest = a.latest_version;
+    // The version installed when this page loaded: if HACS installs another, the page needs a reload.
+    if (installed && this._installedAtLoad === undefined) this._installedAtLoad = installed;
+    const updated = installed && this._installedAtLoad && installed !== this._installedAtLoad;
+    const busy = a.in_progress === true || typeof a.in_progress === "number" || this._installing;
+    if (this._installing && (updated || up?.state === "off")) this._installing = false;
+    const available = up?.state === "on" && !updated;
+    const install = async () => {
+      this._installing = true;
+      try {
+        await this.hass.callService("update", "install", { entity_id: up.entity_id });
+      } catch (err) {
+        this._installing = false;
+        throw err;
+      }
+    };
+    return html`
+      <div class="wrap">
+        <div class="dhead">
+          <ha-icon icon="mdi:view-dashboard-outline"></ha-icon>
+          <div>
+            <div class="dname">Dashboard</div>
+            <div class="dsub">CellKeeper Dashboard${up ? " · HACS" : ""}</div>
+          </div>
+        </div>
+        <div class="facts">
+          <div class=${up ? "clickable" : ""} @click=${() => up && this.moreInfo(up.entity_id)} title=${up ? "Release notes and update" : ""}>
+            <span>Version</span><b class="num mono">${installed ?? (RUNNING_VERSION ? `v${RUNNING_VERSION}` : "–")}</b>
+            ${available
+              ? html`<i class="tag info">${latest} available</i>`
+              : updated
+                ? html`<i class="tag info">updated, reload to use it</i>`
+                : up
+                  ? html`<i class="tag good">up to date</i>`
+                  : ""}
+          </div>
+          ${installed && RUNNING_VERSION && !sameVersion(installed, RUNNING_VERSION) && !updated
+            ? html`<div><span></span><i class="dim">this page runs v${RUNNING_VERSION}</i></div>`
+            : ""}
+          ${!up ? html`<div><span></span><i class="dim">Not installed through HACS, so there's no update check.</i></div>` : ""}
+        </div>
+        ${up
+          ? html`<div class="actions">
+              ${available
+                ? html`<button class="act primary" ?disabled=${busy} @click=${install}>
+                    <ha-icon icon=${busy ? "mdi:progress-download" : "mdi:download"}></ha-icon>${busy ? "Updating…" : `Update to ${latest}`}
+                  </button>`
+                : ""}
+              ${updated
+                ? html`<button class="act primary" @click=${() => location.reload()}>
+                    <ha-icon icon="mdi:refresh"></ha-icon>Reload
+                  </button>`
+                : ""}
+              <button class="act" @click=${() => this.moreInfo(up.entity_id)}>
+                <ha-icon icon="mdi:text-box-outline"></ha-icon>Release notes
+              </button>
+            </div>`
+          : ""}
+      </div>
+    `;
+  }
+
   _meter(key, name, value, text, frac, tone, hint) {
     if (value === undefined && !this.has(key)) return "";
     return html`<div class="meter clickable" @click=${() => this.moreInfo(key)}>
@@ -593,6 +671,14 @@ class CellKeeperSystemCard extends PackCard {
         color: var(--ck-warn);
         background: color-mix(in srgb, var(--ck-warn) 15%, transparent);
       }
+      .tag.info {
+        color: var(--ck-info);
+        background: color-mix(in srgb, var(--ck-info) 15%, transparent);
+      }
+      .tag.good {
+        color: var(--ck-good);
+        background: color-mix(in srgb, var(--ck-good) 15%, transparent);
+      }
       .rail {
         display: grid;
         grid-template-columns: 8.5em 1fr 5em;
@@ -711,6 +797,15 @@ class CellKeeperSystemCard extends PackCard {
       }
       .act ha-icon {
         --mdc-icon-size: 16px;
+      }
+      .act.primary {
+        color: var(--text-primary-color, #fff);
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+      }
+      .act[disabled] {
+        opacity: 0.6;
+        cursor: default;
       }
       .act.armed {
         color: var(--card-background-color, #fff);
