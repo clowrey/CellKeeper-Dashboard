@@ -218,7 +218,9 @@ class CellKeeperSystemCard extends PackCard {
         ${rails.length
           ? html`<div class="label sect">Supply rails</div>
               ${rails.map((r) => this._rail(r))}
-              <div class="note">Bars show the range the firmware accepts; outside it a supply event is raised.</div>`
+              <div class="note">
+                The marks are the firmware's trip points: outside the green range a supply event is raised.
+              </div>`
           : ""}
         ${this._boardTemps()}
       </div>
@@ -283,13 +285,22 @@ class CellKeeperSystemCard extends PackCard {
       id.startsWith(`sensor.${this.prefix}_event_`) && id.includes(`_${r.event}_`)
     );
     const active = eventIds.find((id) => /^(INFO|WARNING|CRITICAL|FATAL) /.test(this.hass.states[id].state));
+    // The firmware's trip points, marked and labelled under the bar.
+    const trips = [r.hardMin, r.min, r.max].filter((x) => x !== undefined);
+    const digits = (x) => (Number.isInteger(x) ? 0 : Number.isInteger(x * 10) ? 1 : 2);
     return html`
       <div class="rail clickable" @click=${() => this.moreInfo(r.key)}>
         <span class="rname">${r.name}</span>
-        <div class="rbar">
-          ${r.hardMin !== undefined ? html`<i class="zone warn" style="left:${pct(r.hardMin)}%;width:${pct(r.min) - pct(r.hardMin)}%"></i>` : ""}
-          <i class="zone good" style="left:${pct(r.min)}%;width:${pct(r.max) - pct(r.min)}%"></i>
-          ${v !== undefined ? html`<i class="pin ${tone}" style="left:${pct(v)}%"></i>` : ""}
+        <div class="rscale">
+          ${v !== undefined ? html`<i class="tri ${tone}" style="left:${pct(v)}%"></i>` : ""}
+          <div class="rbar">
+            ${r.hardMin !== undefined ? html`<i class="zone warn" style="left:${pct(r.hardMin)}%;width:${pct(r.min) - pct(r.hardMin)}%"></i>` : ""}
+            <i class="zone good" style="left:${pct(r.min)}%;width:${pct(r.max) - pct(r.min)}%"></i>
+            ${trips.map((x) => html`<i class="trip" style="left:${pct(x)}%"></i>`)}
+          </div>
+          <div class="rticks">
+            ${trips.map((x) => html`<span class="num" style="left:${pct(x)}%">${fmt(this.hass, x, digits(x))}</span>`)}
+          </div>
         </div>
         <span class="rv num ${tone}">${fmt(this.hass, v, r.max < 6 ? 3 : 2)} V</span>
         ${active ? html`<span class="ralert">${this.hass.states[active].state}</span>` : ""}
@@ -591,10 +602,14 @@ class CellKeeperSystemCard extends PackCard {
         padding: 5px 6px;
         font-size: 13px;
       }
+      .rscale {
+        position: relative;
+        padding: 9px 0 0;
+      }
       .rbar {
         position: relative;
-        height: 8px;
-        border-radius: 4px;
+        height: 6px;
+        border-radius: 3px;
         background: color-mix(in srgb, var(--ck-bad) 25%, transparent);
       }
       .zone {
@@ -608,15 +623,42 @@ class CellKeeperSystemCard extends PackCard {
       .zone.warn {
         background: color-mix(in srgb, var(--ck-warn) 45%, transparent);
       }
-      .pin {
+      /* Pointer above the bar at the reading; amber or red when out of range. */
+      .tri {
         position: absolute;
-        top: -4px;
-        bottom: -4px;
-        width: 4px;
-        margin-left: -2px;
-        border-radius: 2px;
-        background: var(--primary-text-color);
-        box-shadow: 0 0 0 2px var(--card-background-color, #fff);
+        top: 0;
+        width: 0;
+        height: 0;
+        transform: translateX(-50%);
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-top: 8px solid var(--primary-text-color);
+      }
+      .tri.warn {
+        border-top-color: var(--ck-warn);
+      }
+      .tri.bad {
+        border-top-color: var(--ck-bad);
+      }
+      .trip {
+        position: absolute;
+        top: -2px;
+        bottom: -3px;
+        width: 1px;
+        background: var(--ck-muted);
+      }
+      .rticks {
+        position: relative;
+        height: 13px;
+        margin-top: 2px;
+        font-size: 10px;
+        line-height: 13px;
+        color: var(--ck-muted);
+      }
+      .rticks span {
+        position: absolute;
+        transform: translateX(-50%);
+        white-space: nowrap;
       }
       .rv {
         text-align: right;

@@ -98,9 +98,9 @@ rebuilds `src/events/catalog.js` from that table and the HMI's `bms_core.yaml`.
   a dead link shows where it broke.
 - **BMS controller**: firmware build (commit and build time, flagged when built from uncommitted
   changes), board revision, serial and uptime, system and contactor state with their codes, the
-  pack voltages (measured, sum of the cells, output, across each contactor), each supply rail (3.3 V, 5 V, 12 V,
-  contactor supply) on a bar against the range the firmware accepts, and the controller chip and
-  current shunt temperatures.
+  pack voltages (measured, sum of the cells, output, across each contactor), each supply rail
+  (3.3 V, 5 V, 12 V, contactor supply) as a pointer on a scale labelled with the firmware's trip
+  points, and the controller chip and current shunt temperatures.
 - **HMI display**: model, firmware build, Wi-Fi network and signal quality, CPU temperature, free
   memory and loop time, the backlight, and buttons to open its web page and to restart it (tap twice). **All sensors** opens the pack's device page in Home
   Assistant, which lists every sensor the HMI publishes.
