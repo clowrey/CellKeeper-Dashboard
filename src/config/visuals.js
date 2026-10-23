@@ -42,8 +42,12 @@ function voltage(card) {
         ${balMin !== undefined ? html`<div class="tick bal" style="left:${pct(balMin)}%" title="Minimum balancing voltage"></div>` : ""}
         ${balStart !== undefined ? html`<div class="tick bal" style="left:${pct(balStart)}%" title="Balancing start voltage"></div>` : ""}
         ${hasCells
-          ? html`<div class="cells" style="left:${pct(cMin)}%;width:max(4px, ${pct(cMax) - pct(cMin)}%)"
-              title="Cells now: ${v3(card, cMin)}–${v3(card, cMax)} V"></div>`
+          ? html`<div class="cells" style="left:${pct(cMin)}%;width:max(2px, ${pct(cMax) - pct(cMin)}%)"
+                title="Cells now: ${v3(card, cMin)}–${v3(card, cMax)} V"></div>
+              <i class="ptr" style="left:${pct(cMin)}%" title="Lowest cell ${v3(card, cMin)} V"></i>
+              ${pct(cMax) - pct(cMin) > 1.5
+                ? html`<i class="ptr" style="left:${pct(cMax)}%" title="Highest cell ${v3(card, cMax)} V"></i>`
+                : ""}`
           : ""}
       </div>
       <div class="vw-bottom">
@@ -54,7 +58,7 @@ function voltage(card) {
         <span><i class="sw good"></i>Working range: 0–100 % SOC</span>
         <span><i class="sw warn"></i>Beyond: current limited</span>
         <span><i class="sw bad"></i>Beyond soft limits: restoration current only; the firmware's hard limits disconnect</span>
-        ${hasCells ? html`<span><i class="sw cellsw"></i>Cells now <b class="num">${v3(card, cMin)}–${v3(card, cMax)} V</b></span>` : ""}
+        ${hasCells ? html`<span><i class="ptrsw"></i>Lowest and highest cell now <b class="num">${v3(card, cMin)}–${v3(card, cMax)} V</b></span>` : ""}
         ${balStart !== undefined ? html`<span><i class="sw balsw"></i>Balancing thresholds</span>` : ""}
       </div>
       ${!ordered
@@ -147,7 +151,7 @@ function soc(card) {
         <span class="label">BMS</span>
         <div class="sbar">
           <div class="win" style="left:${lo}%;width:${span}%"></div>
-          <div class="pin" style="left:${s}%"></div>
+          <i class="ptr" style="left:${s}%"></i>
         </div>
         <span class="num sv">${fmt(card.hass, s, 1)} %</span>
       </div>
@@ -158,7 +162,7 @@ function soc(card) {
         <span class="label">Inverter</span>
         <div class="sbar">
           <div class="win" style="left:0;width:100%"></div>
-          ${sent !== undefined ? html`<div class="pin" style="left:${sent}%"></div>` : ""}
+          ${sent !== undefined ? html`<i class="ptr" style="left:${sent}%"></i>` : ""}
         </div>
         <span class="num sv">${sent === undefined ? "–" : `${fmt(card.hass, sent, 0)} %`}</span>
       </div>
@@ -255,7 +259,7 @@ function balanceCharge(card) {
       </div>
       <div class="day">
         <div class="win ${interval > 0 ? "" : "off"}" style="left:${(startH / 24) * 100}%;width:${((end - startH) / 24) * 100}%"></div>
-        <div class="now" style="left:${(nowH / 24) * 100}%" title="Now"></div>
+        <i class="ptr" style="left:${(nowH / 24) * 100}%" title="Now"></i>
       </div>
       <div class="day-ticks"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
       ${fPack !== undefined && bPack !== undefined
@@ -306,6 +310,25 @@ export const VISUALS = {
 };
 
 export const visualStyles = css`
+  /* Pointer above a bar at a reading, the same as the System view's supply rails. */
+  .ptr {
+    position: absolute;
+    top: -10px;
+    width: 0;
+    height: 0;
+    transform: translateX(-50%);
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid var(--primary-text-color);
+  }
+  .ptrsw {
+    flex: none;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 7px solid var(--primary-text-color);
+  }
   .note,
   .warnline {
     font-size: 12px;
@@ -363,6 +386,7 @@ export const visualStyles = css`
   }
   .vw-bar {
     position: relative;
+    margin-top: 10px;
     height: 16px;
     border-radius: 8px;
     overflow: visible;
@@ -399,12 +423,11 @@ export const visualStyles = css`
   }
   .cells {
     position: absolute;
-    top: -5px;
-    bottom: -5px;
-    margin-left: -2px;
-    border-radius: 3px;
+    top: 6px;
+    bottom: 6px;
+    margin-left: -1px;
+    border-radius: 2px;
     background: var(--primary-text-color);
-    box-shadow: 0 0 0 2px var(--card-background-color, #fff);
   }
   .legend {
     display: flex;
@@ -428,10 +451,6 @@ export const visualStyles = css`
     height: 10px;
     border-radius: 2px;
     flex: none;
-  }
-  .sw.cellsw {
-    width: 4px;
-    background: var(--primary-text-color);
   }
   .sw.balsw {
     width: 0;
@@ -501,6 +520,7 @@ export const visualStyles = css`
     grid-template-columns: 5.5em 1fr 4em;
     align-items: center;
     gap: 10px;
+    padding-top: 10px;
   }
   .sbar {
     position: relative;
@@ -515,20 +535,14 @@ export const visualStyles = css`
     border-radius: 6px;
     background: color-mix(in srgb, var(--primary-color) 40%, transparent);
   }
-  .sbar .pin {
-    position: absolute;
-    top: -4px;
-    bottom: -4px;
-    width: 4px;
-    margin-left: -2px;
-    border-radius: 2px;
-    background: var(--primary-text-color);
-  }
   .sv {
     text-align: right;
     font-size: 13px;
   }
+  /* Reaches down past the inverter bar's pointer lane to the bar itself. */
   .fan {
+    position: relative;
+    margin-bottom: -10px;
     display: block;
     width: calc(100% - 5.5em - 4em - 20px);
     margin-left: calc(5.5em + 10px);
@@ -610,6 +624,7 @@ export const visualStyles = css`
   }
   .day {
     position: relative;
+    margin-top: 12px;
     height: 12px;
     border-radius: 6px;
     background: var(--ck-track);
@@ -623,14 +638,6 @@ export const visualStyles = css`
   }
   .day .win.off {
     background: repeating-linear-gradient(90deg, var(--ck-line) 0 4px, transparent 4px 8px);
-  }
-  .day .now {
-    position: absolute;
-    top: -4px;
-    bottom: -4px;
-    width: 2px;
-    margin-left: -1px;
-    background: var(--primary-text-color);
   }
   .day-ticks {
     display: flex;
